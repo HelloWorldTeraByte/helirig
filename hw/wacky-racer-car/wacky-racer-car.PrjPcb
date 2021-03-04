@@ -57,7 +57,7 @@ GenerateClassCluster=0
 DocumentUniqueId=LLDDKXRZ
 
 [Document2]
-DocumentPath=Power.SchDoc
+DocumentPath=Power Management.SchDoc
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -74,40 +74,6 @@ GenerateClassCluster=0
 DocumentUniqueId=FMYHDGBH
 
 [Document3]
-DocumentPath=Actuators Motors.SchDoc
-AnnotationEnabled=1
-AnnotateStartValue=1
-AnnotationIndexControlEnabled=0
-AnnotateSuffix=
-AnnotateScope=All
-AnnotateOrder=2
-DoLibraryUpdate=1
-DoDatabaseUpdate=1
-ClassGenCCAutoEnabled=1
-ClassGenCCAutoRoomEnabled=1
-ClassGenNCAutoScope=None
-DItemRevisionGUID=
-GenerateClassCluster=0
-DocumentUniqueId=VHADXOLO
-
-[Document4]
-DocumentPath=Radio.SchDoc
-AnnotationEnabled=1
-AnnotateStartValue=1
-AnnotationIndexControlEnabled=0
-AnnotateSuffix=
-AnnotateScope=All
-AnnotateOrder=3
-DoLibraryUpdate=1
-DoDatabaseUpdate=1
-ClassGenCCAutoEnabled=1
-ClassGenCCAutoRoomEnabled=1
-ClassGenNCAutoScope=None
-DItemRevisionGUID=
-GenerateClassCluster=0
-DocumentUniqueId=YXBHQYTL
-
-[Document5]
 DocumentPath=wacky-racer-car.OutJob
 AnnotationEnabled=1
 AnnotateStartValue=1
