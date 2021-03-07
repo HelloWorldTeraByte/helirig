@@ -1,4 +1,1 @@
-Record=TopLevelDocument|FileName=Actuators Motors.SchDoc|SheetNumber= 
-Record=NoMainPathDocument|SourceDocument=Actuators Motors.SchDoc|FileName=MCU.SchDoc|SheetNumber=1
-Record=NoMainPathDocument|SourceDocument=Actuators Motors.SchDoc|FileName=Power.SchDoc|SheetNumber= 
-Record=NoMainPathDocument|SourceDocument=Actuators Motors.SchDoc|FileName=Radio.SchDoc|SheetNumber= 
+Record=TopLevelDocument|FileName=MCU.SchDoc
