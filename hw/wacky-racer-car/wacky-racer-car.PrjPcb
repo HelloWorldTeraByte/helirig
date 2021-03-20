@@ -105,6 +105,10 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=SNNJIXHS
 
+[GeneratedDocument1]
+DocumentPath=
+DItemRevisionGUID=
+
 [Configuration1]
 Name=Sources
 ParameterCount=0
