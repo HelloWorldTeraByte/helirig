@@ -38,8 +38,10 @@
 #define IMU_INT_PIO PA0_PIO
 
 /* LEDs  */
-#define LED1_PIO PA20_PIO
-#define LED2_PIO PA23_PIO
+#define LED1_PIO PA0_PIO
+#define LED2_PIO PA1_PIO
+#define LED3_PIO PA15_PIO
+#define LED4_PIO PA16_PIO
 
 /* General  */
 #define APPENDAGE_PIO PA1_PIO
