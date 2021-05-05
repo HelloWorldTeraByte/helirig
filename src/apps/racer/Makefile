@@ -1,5 +1,5 @@
-PERIPHERALS = pit
-DRIVERS =
+PERIPHERALS = pwm pit
+DRIVERS = 
 TARGET = racer.bin
 
 SRC = racer.c
