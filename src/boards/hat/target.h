@@ -43,6 +43,12 @@
 #define LED3_PIO PA15_PIO
 #define LED4_PIO PA16_PIO
 
+
+#define LED_STATUS PA0_PIO
+#define LED_LOW_BAT PA1_PIO
+#define LED_ERROR PA15_PIO
+#define LED_DEBUG PA16_PIO
+
 /* General  */
 #define APPENDAGE_PIO PA1_PIO
 #define SERVO_PWM_PIO PA2_PIO

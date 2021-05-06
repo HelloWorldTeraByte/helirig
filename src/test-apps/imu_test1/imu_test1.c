@@ -1,4 +1,4 @@
-/* File:   imu_test1.c
+ /* File:   imu_test1.c
    Author: B Mitchell, UCECE
    Date:   15/4/2021
    Descr:  Read from an MP9250 IMU and write its output to the USB serial.
@@ -9,6 +9,7 @@
 #include "pacer.h"
 #include "usb_serial.h"
 #include "mpu9250.h"
+#include <math.h>
 
 static usb_serial_cfg_t usb_serial_cfg =
 {
@@ -40,6 +41,13 @@ main (void)
 
 
     pacer_init (10);
+    int16_t prev_accel[3];
+    float speed[3];
+
+    pio_config_set (LED_STATUS, PIO_OUTPUT_LOW);
+    pio_config_set (LED_LOW_BAT, PIO_OUTPUT_LOW);
+    pio_config_set (LED_ERROR, PIO_OUTPUT_LOW);
+    pio_config_set (LED_DEBUG, PIO_OUTPUT_LOW);
 
     while (1)
     {
@@ -53,7 +61,35 @@ main (void)
             } else {
                 int16_t accel[3];
                 if (mpu9250_read_accel(mpu, accel)) {
+
+                    int accel_x = accel[0];
+                    int accel_y = accel[1];
+                    int accel_z = accel[2];
+
+                    double tilt_forward = atan((double) -accel_x/accel_z); 
+                    double tilt_side = atan((double) -accel_y/accel_z); 
+                    // if (accel_x > accel_y){
+                    //     if(accel_x > accel_z){
+                    //         pio_output_high(LED_STATUS);
+                    //         pio_output_low(LED_LOW_BAT);
+                    //         pio_output_low(LED_ERROR);
+                    //         pio_output_low(LED_DEBUG);
+                    //     }
+                    // }else if( accel_y > accel_z){
+                    //     pio_output_low(LED_STATUS);
+                    //     pio_output_high(LED_LOW_BAT);
+                    //     pio_output_low(LED_ERROR);
+                    //     pio_output_low(LED_DEBUG);
+                    // }else{
+                    //     pio_output_low(LED_STATUS);
+                    //     pio_output_low(LED_LOW_BAT);
+                    //     pio_output_high(LED_ERROR);
+                    //     pio_output_low(LED_DEBUG);
+                    // }
+
                     printf("x: %5d  y: %5d  z: %5d\n", accel[0], accel[1], accel[2]);
+                    printf("forward: %5f  side: %5f \n ", tilt_forward, tilt_side);
+
                 } else {
                     printf("ERROR: failed to read acceleration\n");
                 }
