@@ -21,6 +21,12 @@
 /* 96 MHz  */
 #define F_CPU (F_PLL / 2)
 
+#define LOOP_POLL_RATE  200
+/* Define LED flash rate in Hz.  */
+#define LED_FLASH_RATE 2
+/* Define Motor speed update rate in Hz.  */
+#define MOTOR_UPDATE_RATE 10
+
 /* TWI  */
 #define TWI_TIMEOUT_US_DEFAULT 10000
 
@@ -40,8 +46,6 @@
 #define BUTTON_PIO PA16_PIO
 
 /* H-bridges   */
-#define MOTOR_PWM_FREQ_HZ 50e3
-
 #define MOTOR_LEFT_PWM_PIO_0 PA23_PIO
 #define MOTOR_LEFT_PWM_PIO_1 PA0_PIO
 

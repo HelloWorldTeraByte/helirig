@@ -5,14 +5,6 @@
 
 /* Define how fast ticks occur.  This must be faster than
    TICK_RATE_MIN.  */
-enum {LOOP_POLL_RATE = 200};
-
-/* Define LED flash rate in Hz.  */
-enum {LED_FLASH_RATE = 2};
-
-/* Define Motor speed update rate in Hz.  */
-enum {MOTOR_UPDATE_RATE = 10};
-
 void racer_init(void)
 {
     /* Configure LED PIO as output.  */
