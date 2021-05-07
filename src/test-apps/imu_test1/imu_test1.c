@@ -24,6 +24,26 @@ static twi_cfg_t mpu_twi_cfg =
     .slave_addr = 0 // only needed in slave mode.
 };
 
+void tilt_filter(double *tilt_f, double *tilt_s){
+    //active zone 0.2 < tilt < 1
+    if (*tilt_f > 1){
+        *tilt_f = 1; 
+    } else if (*tilt_f < -1){
+        *tilt_f = -1;
+    }
+    if (*tilt_s < -1){
+        *tilt_s = -1;
+    } else if (*tilt_s > 1){
+        *tilt_s = 1;
+    }
+
+    if (*tilt_f > -0.2 && *tilt_f < 0.2){
+        *tilt_f = 0;
+    }
+    if  (*tilt_s > -0.2 && *tilt_s < 0.2){
+        *tilt_s = 0;
+    }
+}
 
 int
 main (void)
@@ -41,8 +61,8 @@ main (void)
 
 
     pacer_init (10);
-    int16_t prev_accel[3];
-    float speed[3];
+
+    double MOTOR_SPEED = 1;
 
     pio_config_set (LED_STATUS, PIO_OUTPUT_LOW);
     pio_config_set (LED_LOW_BAT, PIO_OUTPUT_LOW);
@@ -68,27 +88,20 @@ main (void)
 
                     double tilt_forward = atan((double) -accel_x/accel_z); 
                     double tilt_side = atan((double) -accel_y/accel_z); 
-                    // if (accel_x > accel_y){
-                    //     if(accel_x > accel_z){
-                    //         pio_output_high(LED_STATUS);
-                    //         pio_output_low(LED_LOW_BAT);
-                    //         pio_output_low(LED_ERROR);
-                    //         pio_output_low(LED_DEBUG);
-                    //     }
-                    // }else if( accel_y > accel_z){
-                    //     pio_output_low(LED_STATUS);
-                    //     pio_output_high(LED_LOW_BAT);
-                    //     pio_output_low(LED_ERROR);
-                    //     pio_output_low(LED_DEBUG);
-                    // }else{
-                    //     pio_output_low(LED_STATUS);
-                    //     pio_output_low(LED_LOW_BAT);
-                    //     pio_output_high(LED_ERROR);
-                    //     pio_output_low(LED_DEBUG);
-                    // }
 
-                    printf("x: %5d  y: %5d  z: %5d\n", accel[0], accel[1], accel[2]);
-                    printf("forward: %5f  side: %5f \n ", tilt_forward, tilt_side);
+                    double motor_input_1;
+                    double motor_input_2;
+                    
+                    // the motors are organised in the following configuration:
+                    // front
+                    // 1   2
+                    tilt_filter(&tilt_forward, &tilt_side);
+                    
+                    motor_input_1 = MOTOR_SPEED * tilt_forward * (1-tilt_side);
+                    motor_input_2 = MOTOR_SPEED * tilt_forward * (1+tilt_side);
+
+                    
+                    printf("left: %5f  right: %5f \n ", motor_input_1, motor_input_2);
 
                 } else {
                     printf("ERROR: failed to read acceleration\n");
