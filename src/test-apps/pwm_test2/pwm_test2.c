@@ -8,8 +8,8 @@
 #include "pio.h"
 
 
-#define PWM1_PIO PA1_PIO
-#define PWM2_PIO PA2_PIO
+#define PWM1_PIO PA0_PIO
+#define PWM2_PIO PA1_PIO
 
 #define PWM_FREQ_HZ 100e3
 
