@@ -1,8 +1,8 @@
 PERIPHERALS = pwm pit
-DRIVERS = 
+DRIVERS = pacer led
 TARGET = racer.bin
 
-SRC = racer.c
+SRC = racer.c motors.c
 OPT = -O2
 
 ifneq ($(BOARD), racer)
