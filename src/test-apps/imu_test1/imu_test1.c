@@ -1,4 +1,4 @@
-/* File:   imu_test1.c
+ /* File:   imu_test1.c
    Author: B Mitchell, UCECE
    Date:   15/4/2021
    Descr:  Read from an MP9250 IMU and write its output to the USB serial.
@@ -9,6 +9,7 @@
 #include "pacer.h"
 #include "usb_serial.h"
 #include "mpu9250.h"
+#include <math.h>
 
 static usb_serial_cfg_t usb_serial_cfg =
 {
@@ -23,6 +24,26 @@ static twi_cfg_t mpu_twi_cfg =
     .slave_addr = 0 // only needed in slave mode.
 };
 
+void tilt_filter(double *tilt_f, double *tilt_s){
+    //active zone 0.2 < tilt < 1
+    if (*tilt_f > 1){
+        *tilt_f = 1; 
+    } else if (*tilt_f < -1){
+        *tilt_f = -1;
+    }
+    if (*tilt_s < -1){
+        *tilt_s = -1;
+    } else if (*tilt_s > 1){
+        *tilt_s = 1;
+    }
+
+    if (*tilt_f > -0.2 && *tilt_f < 0.2){
+        *tilt_f = 0;
+    }
+    if  (*tilt_s > -0.2 && *tilt_s < 0.2){
+        *tilt_s = 0;
+    }
+}
 
 int
 main (void)
@@ -41,6 +62,13 @@ main (void)
 
     pacer_init (10);
 
+    double MOTOR_SPEED = 1;
+
+    pio_config_set (LED_STATUS, PIO_OUTPUT_LOW);
+    pio_config_set (LED_LOW_BAT, PIO_OUTPUT_LOW);
+    pio_config_set (LED_ERROR, PIO_OUTPUT_LOW);
+    pio_config_set (LED_DEBUG, PIO_OUTPUT_LOW);
+
     while (1)
     {
         /* Wait until next clock tick.  */
@@ -53,7 +81,28 @@ main (void)
             } else {
                 int16_t accel[3];
                 if (mpu9250_read_accel(mpu, accel)) {
-                    printf("x: %5d  y: %5d  z: %5d\n", accel[0], accel[1], accel[2]);
+
+                    int accel_x = accel[0];
+                    int accel_y = accel[1];
+                    int accel_z = accel[2];
+
+                    double tilt_forward = atan((double) -accel_x/accel_z); 
+                    double tilt_side = atan((double) -accel_y/accel_z); 
+
+                    double motor_input_1;
+                    double motor_input_2;
+                    
+                    // the motors are organised in the following configuration:
+                    // front
+                    // 1   2
+                    tilt_filter(&tilt_forward, &tilt_side);
+                    
+                    motor_input_1 = MOTOR_SPEED * tilt_forward * (1-tilt_side);
+                    motor_input_2 = MOTOR_SPEED * tilt_forward * (1+tilt_side);
+
+                    
+                    printf("left: %5f  right: %5f \n ", motor_input_1, motor_input_2);
+
                 } else {
                     printf("ERROR: failed to read acceleration\n");
                 }
