@@ -11,6 +11,15 @@
 #include "mpu9250.h"
 #include <math.h>
 
+/* Define how fast ticks occur.  This must be faster than
+   TICK_RATE_MIN.  */
+enum {LOOP_POLL_RATE = 200};
+
+/* Define LED flash rate in Hz.  */
+enum {LED_FLASH_RATE = 2};
+
+double MOTOR_SPEED = 1;
+
 static usb_serial_cfg_t usb_serial_cfg =
 {
     .read_timeout_us = 1,
@@ -25,7 +34,7 @@ static twi_cfg_t mpu_twi_cfg =
 };
 
 void tilt_filter(double *tilt_f, double *tilt_s){
-    //active zone 0.2 < tilt < 1
+    //active zone 0.2 rad < tilt < 1 rad
     if (*tilt_f > 1){
         *tilt_f = 1; 
     } else if (*tilt_f < -1){
@@ -45,6 +54,26 @@ void tilt_filter(double *tilt_f, double *tilt_s){
     }
 }
 
+void calc_motor(double *tilt_f, double *tilt_s, double *motor1, double *motor2){
+    if ((*tilt_s > 0 || *tilt_s < 0) && *tilt_f == 0){
+        *motor1 = MOTOR_SPEED * (1-*tilt_s)/2;
+        *motor2 = MOTOR_SPEED * (1+*tilt_s)/2;
+    } else {
+        *motor1 = MOTOR_SPEED * *tilt_f * (1-*tilt_s);
+        *motor2 = MOTOR_SPEED * *tilt_f * (1+*tilt_s);
+    }
+    if (*motor1 > 1){
+        *motor1 = 1;
+    } else if (*motor1 < -1){
+        *motor1 = -1;
+    }
+    if (*motor2 > 1){
+        *motor2 = 1;
+    } else if (*motor2 < -1){
+        *motor2 = -1;
+    }
+}
+
 int
 main (void)
 {
@@ -61,7 +90,8 @@ main (void)
 
     pacer_init (10);
 
-    double MOTOR_SPEED = 1;
+    uint8_t flash_ticks = 0;
+
 
     pio_config_set (LED_STATUS, PIO_OUTPUT_LOW);
     pio_config_set (LED_LOW_BAT, PIO_OUTPUT_LOW);
@@ -91,6 +121,8 @@ main (void)
 
                     double tilt_forward = atan((double) -accel_x/accel_z); 
                     double tilt_side = atan((double) -accel_y/accel_z); 
+                    //double tilt_mag;
+                    //calculate the magnitude of tilt to control speed? v2 idea
 
                     double motor_input_1;
                     double motor_input_2;
@@ -99,10 +131,7 @@ main (void)
                     // front
                     // 1   2
                     tilt_filter(&tilt_forward, &tilt_side);
-                    
-                    motor_input_1 = MOTOR_SPEED * tilt_forward * (1-tilt_side);
-                    motor_input_2 = MOTOR_SPEED * tilt_forward * (1+tilt_side);
-
+                    calc_motor(&tilt_forward, &tilt_side, &motor_input_1, &motor_input_2);
                     
                     printf("left: %5f  right: %5f \n ", motor_input_1, motor_input_2);
 
@@ -114,6 +143,15 @@ main (void)
         else
         {
             printf("ERROR: can't find MPU9250!\n");
+        }
+
+        flash_ticks++;
+        if (flash_ticks >= LOOP_POLL_RATE / (LED_FLASH_RATE * 2))
+        {
+            flash_ticks = 0;
+
+            /* Toggle LED.  */
+            pio_output_toggle (LED_STATUS);
         }
 
         fflush(stdout);
