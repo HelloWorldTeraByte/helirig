@@ -2,6 +2,7 @@
 #include "pacer.h"
 #include "pio.h"
 #include "motors.h"
+#include "radio_comm.h"
 
 /* Define how fast ticks occur.  This must be faster than
    TICK_RATE_MIN.  */
@@ -13,20 +14,25 @@ void racer_init(void)
 
     /* Initilize the motors*/
     motors_init();
+
+    radio_init();
+
+    pacer_init(LOOP_POLL_RATE);
 }
 
 int main(void)
 {   
     uint8_t flash_ticks;
-    uint8_t speed = 0;
-    pacer_init(LOOP_POLL_RATE);
     flash_ticks = 0;
 
-    /* Initilize the car - GPIO and motors*/
+    /* Initilize the car - GPIO, pacer and motors*/
     racer_init();
 
-    motor_left_set(50);
-    motor_right_set(50);
+    char buffer[32];
+    sprintf(buffer, "Ohh OOH\r\n");
+
+    motor_left_set(0);
+    motor_right_set(0);
 
     while (1) {
         /* Wait until next clock tick.  */
@@ -36,10 +42,8 @@ int main(void)
         if (flash_ticks >= LOOP_POLL_RATE / (LED_FLASH_RATE * 2))
         {
             flash_ticks = 0;
-            /* Toggle LED.  */
             pio_output_toggle(LED1_PIO);
-            pio_output_toggle(LED2_PIO);
-
+            radio_write(buffer, sizeof(buffer));
         }
     }
     return 0;

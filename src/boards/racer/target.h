@@ -62,8 +62,8 @@
 
 
 /* Radio  */
-#define RADIO_CS_PIO PA10_PIO
-#define RADIO_CE_PIO PA9_PIO
+#define RADIO_CS_PIO PA24_PIO
+#define RADIO_CE_PIO PA26_PIO
 #define RADIO_IRQ_PIO PA15_PIO
 
 
