@@ -2,7 +2,7 @@ PERIPHERALS = pit
 DRIVERS =
 TARGET = hat.bin
 
-SRC = hat.c
+SRC = hat.c imu.c imu.h joystick.c joystick.h
 OPT = -O2
 
 ifneq ($(BOARD), hat)
