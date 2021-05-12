@@ -57,9 +57,9 @@
 #define BUTTON_PIO PA16_PIO
 
 /* Radio  */
-#define RADIO_CS_PIO PA10_PIO
-#define RADIO_CE_PIO PA9_PIO
-#define RADIO_IRQ_PIO PA15_PIO
+#define RADIO_CS_PIO PA25_PIO
+#define RADIO_CE_PIO PA26_PIO
+#define RADIO_IRQ_PIO PA24_PIO
 
 
 #endif /* TARGET_H  */
