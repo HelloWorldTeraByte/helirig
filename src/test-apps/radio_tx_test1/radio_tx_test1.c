@@ -47,23 +47,27 @@ int main (void)
         panic();
 
     // initialize the NRF24 radio with its unique 5 byte address
-    if (!nrf24_begin(nrf, 4, 0x0123456789, 32))
+    if (!nrf24_begin(nrf, 2, 0x1234567893, 12))
         panic();
 
     while (1)
     {
-        char buffer[32];
+        char buffer[12] = {0};
 
         pacer_wait();
         pio_output_toggle(LED2_PIO);
         pio_output_set(LED1_PIO, 1);
 
-        sprintf (buffer, "Hello world %d\r\n", count++);
+        sprintf (buffer, "70,%d\n",count++);
 
         if (! nrf24_write(nrf, buffer, sizeof (buffer)))
             pio_output_set(LED1_PIO, 0);
         else
             pio_output_set(LED1_PIO, 1);
+
+        if (count > 100){
+            count = 0;
+        }
     }
 }
 
