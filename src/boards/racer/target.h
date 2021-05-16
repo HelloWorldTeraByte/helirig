@@ -21,11 +21,15 @@
 /* 96 MHz  */
 #define F_CPU (F_PLL / 2)
 
+/* Define how fast ticks occur.  This must be faster than
+   TICK_RATE_MIN.  */
 #define LOOP_POLL_RATE  200
 /* Define LED flash rate in Hz.  */
 #define LED_FLASH_RATE 2
 /* Define Motor speed update rate in Hz.  */
 #define MOTOR_UPDATE_RATE 10
+
+#define RADIO_POLL_RATE 1
 
 /* TWI  */
 #define TWI_TIMEOUT_US_DEFAULT 10000
@@ -48,23 +52,23 @@
 /* H-bridges   */
 #define MOTOR_LEFT_PWM_PIO_0 PA23_PIO
 #define MOTOR_LEFT_PWM_PIO_1 PA0_PIO
-
 #define MOTOR_RIGHT_PWM_PIO_0 PB1_PIO
 #define MOTOR_RIGHT_PWM_PIO_1 PA1_PIO
-
 #define MOTOR_SLEEP_PIO PA7_PIO
+
+/* Servo */
+#define SERVO1_PWM_PIO PA25_PIO
+
+/* Radio  */
+#define RADIO_CS_PIO PA24_PIO
+#define RADIO_CE_PIO PA26_PIO
+#define RADIO_IRQ_PIO PA15_PIO
 
 //#define MOTOR_LEFT_PHASE_PIO PB4_PIO
 //#define MOTOR_LEFT_MODE_PIO PA27_PIO
 //#define MOTOR_RIGHT_PWM_PIO PA7_PIO
 //#define MOTOR_RIGHT_PHASE_PIO PA6_PIO
 //#define MOTOR_RIGHT_MODE_PIO PA28_PIO
-
-
-/* Radio  */
-#define RADIO_CS_PIO PA24_PIO
-#define RADIO_CE_PIO PA26_PIO
-#define RADIO_IRQ_PIO PA15_PIO
 
 
 #endif /* TARGET_H  */

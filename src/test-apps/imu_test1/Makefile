@@ -1,4 +1,4 @@
-DRIVERS = pacer usb_serial mpu
+DRIVERS = pacer usb_serial mpu rf
 
 TARGET = imu_test1.bin
 

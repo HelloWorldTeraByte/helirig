@@ -1,5 +1,6 @@
 #include "motors.h"
 #include "target.h"
+#include "pwm.h"
 #include "pio.h"
 
 static const pwm_cfg_t mtr_l_pwm_cfg =

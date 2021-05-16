@@ -1,10 +1,9 @@
 #ifndef __MOTORS__H
 #define __MOTORS__H
 
-#include "target.h"
-#include "pwm.h"
+#include "stdint.h"
 
-#define MOTOR_PWM_FREQ_HZ 50e3
+#define MOTOR_PWM_FREQ_HZ 10e3
 
 void motors_init(void);
 void motor_left_set(int8_t speed);

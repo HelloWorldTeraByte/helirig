@@ -10,7 +10,8 @@
 #include "usb_serial.h"
 #include "mpu9250.h"
 #include <math.h>
-
+#include "nrf24.h"
+#include "delay.h"
 /* Define how fast ticks occur.  This must be faster than
    TICK_RATE_MIN.  */
 enum {LOOP_POLL_RATE = 200};
@@ -74,6 +75,14 @@ void calc_motor(double *tilt_f, double *tilt_s, double *motor1, double *motor2){
     }
 }
 
+static void panic(void)
+{
+    while (1) {
+        pio_output_toggle(LED_ERROR);
+        delay_ms(400);
+    }
+}
+
 int
 main (void)
 {
@@ -92,6 +101,25 @@ main (void)
 
     uint8_t flash_ticks = 0;
 
+    spi_cfg_t nrf_spi = {
+        .channel = 0,
+        .clock_speed_kHz = 1000,
+        .cs = RADIO_CS_PIO,
+        .mode = SPI_MODE_0,
+        .cs_mode = SPI_CS_MODE_FRAME,
+        .bits = 8,
+    };
+    nrf24_t *nrf;
+    spi_t spi;
+
+    spi = spi_init(&nrf_spi);
+    nrf = nrf24_create(spi, RADIO_CE_PIO, RADIO_IRQ_PIO);
+    if (!nrf)
+        panic();
+
+    // initialize the NRF24 radio with its unique 5 byte address
+    if (!nrf24_begin(nrf, 2, 0x1234567893, 12))
+        panic();
 
     pio_config_set (LED_STATUS, PIO_OUTPUT_LOW);
     pio_config_set (LED_LOW_BAT, PIO_OUTPUT_LOW);
@@ -102,6 +130,7 @@ main (void)
     {
         /* Wait until next clock tick.  */
         pacer_wait ();
+        char buffer[12] = {0};
 
         if (mpu)
         {
@@ -133,7 +162,15 @@ main (void)
                     tilt_filter(&tilt_forward, &tilt_side);
                     calc_motor(&tilt_forward, &tilt_side, &motor_input_1, &motor_input_2);
                     
-                    printf("left: %5f  right: %5f \n ", motor_input_1, motor_input_2);
+                    //printf("left: %5f  right: %5f \n ", motor_input_1, motor_input_2);
+
+                    int motor_input_1_out = motor_input_1 * 100;
+                    int motor_input_2_out = motor_input_2 * 100;
+                    sprintf (buffer, "%d,%d\n",motor_input_1_out, motor_input_2_out);
+                    if (! nrf24_write(nrf, buffer, sizeof (buffer)))
+                        pio_output_set(LED_STATUS, 0);
+                    else
+                        pio_output_set(LED_STATUS, 1);
 
                 } else {
                     printf("ERROR: failed to read acceleration\n");
