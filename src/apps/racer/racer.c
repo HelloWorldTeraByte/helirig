@@ -59,10 +59,10 @@ int main(void)
         char *pch;
         pch = strtok(r_buff, ",");
         mtr_l_speed = atoi(pch);
-        motor_left_set(80);
+        motor_left_set(mtr_l_speed);
         pch = strtok(NULL, ",");
         mtr_r_speed = atoi(pch);
-        motor_right_set(80);
+        motor_right_set(mtr_r_speed);
 
         radio_ticks++;
         if (radio_ticks >= LOOP_POLL_RATE / (RADIO_POLL_RATE * 2))
