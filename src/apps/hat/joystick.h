@@ -2,8 +2,7 @@
 #define JOYSTICK_H_
 
 void init_joystick(void);
-int read_joystick_x(void);
-int read_joystick_y(void);
+void get_left_speed(int speed_buffer[]);
 
 
 
