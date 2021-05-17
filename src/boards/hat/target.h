@@ -49,12 +49,14 @@
 #define LED_ERROR PA15_PIO
 #define LED_DEBUG PA16_PIO
 
+
 /* General  */
 #define APPENDAGE_PIO PA1_PIO
 #define SERVO_PWM_PIO PA2_PIO
 
 /* Button  */
 #define BUTTON_PIO PA16_PIO
+#define JOYSTICK_BUTTON PA19_PIO
 
 /* Radio  */
 #define RADIO_CS_PIO PA25_PIO

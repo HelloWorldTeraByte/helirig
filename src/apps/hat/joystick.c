@@ -3,40 +3,32 @@
 #include <stdio.h>
 
 #define ADC_CLOCK_FREQ 24000000
+#define adc_max_reading 4095
 
-adc_t adcx;
-adc_t adcy;
+adc_t adc;
+uint16_t data[2];
 
-static const adc_cfg_t adcx_cfg =
+static const adc_cfg_t adc_cfg =
 {
     .bits = 12,
-    .channel = ADC_CHANNEL_0,
-    .trigger = ADC_TRIGGER_SW,
-    .clock_speed_kHz = ADC_CLOCK_FREQ / 1000
-};
-
-static const adc_cfg_t adcy_cfg =
-{
-    .bits = 12,
-    .channel = ADC_CHANNEL_1,
+    .channels = BIT (ADC_CHANNEL_0) | BIT (ADC_CHANNEL_1),
     .trigger = ADC_TRIGGER_SW,
     .clock_speed_kHz = ADC_CLOCK_FREQ / 1000
 };
 
 
 void init_joystick(void){
-    adcx = adc_init (&adcx_cfg);
-    adcy = adc_init (&adcy_cfg);
+    adc = adc_init (&adc_cfg);
 }
 
-int read_joystick_x(void){
-    uint16_t data[1];
-    adc_read (adcx, data, sizeof (data));
-    return &data;
+int read_joystick(void){
+    adc_read (adc, data, sizeof (data));
 }
 
-int read_joystick_y(void){
-    uint16_t data[1];
-    adc_read (adcx, data, sizeof (data));
-    return &data;
+int get_joystick_x(void){
+    return data[1];
+}
+
+int get_joystick_y(void){
+    return data[1];
 }

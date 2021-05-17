@@ -1,5 +1,5 @@
-PERIPHERALS = pit
-DRIVERS =
+PERIPHERALS = pit adc
+DRIVERS = usb_serial rf pacer
 TARGET = hat.bin
 
 SRC = hat.c imu.c imu.h joystick.c joystick.h
