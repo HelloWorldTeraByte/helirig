@@ -56,7 +56,6 @@ int main (void)
         get_left_speed(motor_input);
         radio_transmit(motor_input[0]+100, motor_input[1]+100);
 
-
         
         //flash_ticks++;
         //if (flash_ticks >= LOOP_POLL_RATE / (LED_FLASH_RATE * 2))
