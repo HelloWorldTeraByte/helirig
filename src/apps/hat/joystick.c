@@ -1,10 +1,12 @@
 #include "joystick.h"
 #include "adc.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 #include <stdbool.h>
 
 #define ADC_CLOCK_FREQ 24000000
+
 #define adc_max_reading 4095
 #define center_val 1920
 #define center_dead_zone 100
@@ -27,7 +29,7 @@ void init_joystick(void){
     adc = adc_init (&adc_cfg);
 }
 
-int read_joystick(void){
+void read_joystick(void){
     adc_read (adc, data, sizeof (data));
 }
 
@@ -50,20 +52,27 @@ bool is_in_deadzone(int val){
     return false;
 }
 
-bool is_in_spinzone(int val){
-    if (is_in_deadzone(val)){
+bool is_in_spinzone(int xval, int yval){
+    if (is_in_deadzone(yval)){
         return false;
-    }else if(abs(val) < spin_threshold +  center_dead_zone){
+    }else if(abs(xval) < spin_threshold +  center_dead_zone){
         return true;
     }
     return false;
 }
 
 void get_left_speed(int speed_buffer[]){
+    read_joystick();
     double forward_reading = get_joystick_x();
     double side_reading = get_joystick_y();
-    if (is_in_spinzone(forward_reading)){
+    if (is_in_spinzone(forward_reading, side_reading)){
         speed_buffer[0] = side_reading/(adc_max_reading/2.0) * 100;
         speed_buffer[1] = -side_reading/(adc_max_reading/2.0) * 100;
+    }else if(!is_in_deadzone(forward_reading)){
+        speed_buffer[0] = forward_reading/(adc_max_reading/2.0) * 100;
+        speed_buffer[1] = forward_reading/(adc_max_reading/2.0) * 100;
+    }else{
+        speed_buffer[0] = 0;
+        speed_buffer[1] = 0;
     }
 }

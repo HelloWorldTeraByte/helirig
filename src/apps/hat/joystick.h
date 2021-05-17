@@ -6,5 +6,4 @@ void get_left_speed(int speed_buffer[]);
 
 
 
-
 #endif /*JOYSTICK_H_*/
