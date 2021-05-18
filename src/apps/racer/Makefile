@@ -1,8 +1,8 @@
 PERIPHERALS = pwm pit
-DRIVERS = pacer led rf
+DRIVERS = pacer led rf usb_serial 
 TARGET = racer.bin
 
-SRC = racer.c motors.c radio_comm.c servos.c
+SRC = racer.c motors.c radio_comm.c servos.c usb_comm.c
 OPT = -O0
 
 ifneq ($(BOARD), racer)
