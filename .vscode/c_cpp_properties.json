@@ -12,6 +12,7 @@
             ],
             "includePath": [
                 "${workspaceFolder}/src/boards/hat",
+                "${workspaceFolder}/src/apps/utils",
                 "${workspaceFolder}/src/mat91lib/**",
                 "${workspaceFolder}/src/mmculib/**"
             ]
@@ -28,6 +29,7 @@
             ],
             "includePath": [
                 "${workspaceFolder}/src/boards/racer",
+                "${workspaceFolder}/src/apps/utils",
                 "${workspaceFolder}/src/mat91lib/**",
                 "${workspaceFolder}/src/mmculib/**"
             ]
