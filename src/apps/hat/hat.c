@@ -16,7 +16,9 @@
 enum {LOOP_POLL_RATE = 200};
 
 /* Define LED flash rate in Hz.  */
-enum {LED_FLASH_RATE = 50};
+enum {LED_FLASH_RATE = 10};
+
+#define MOTOR_OFFSET 100
 
 void led_init(void)
 {
@@ -31,10 +33,10 @@ void hat_init(void)
     led_init();
 
     init_joystick();
-    radio_comm_init();
     pacer_init(10);
     usb_comm_init();
     imu_init();
+    radio_comm_init();
 }
 
 int main (void)
@@ -48,23 +50,33 @@ int main (void)
     int motor_input_1;
     int motor_input_2;
 
+    bool jumping;
+    
     while (1)
     {
         /* Wait until next clock tick.  */
         pacer_wait ();
-        //imu_read(&motor_input_1, &motor_input_2);
+        imu_read(&motor_input_1, &motor_input_2, &jumping);
         get_left_speed(motor_input);
-        radio_transmit(motor_input[0]+100, motor_input[1]+100);
-
+        radio_transmit(motor_input[0]+MOTOR_OFFSET, motor_input[1]+MOTOR_OFFSET);
         
-        //flash_ticks++;
-        //if (flash_ticks >= LOOP_POLL_RATE / (LED_FLASH_RATE * 2))
-        //{
-        //    flash_ticks = 0;
+        if (jumping){
+            flash_ticks++;
+
+            if (flash_ticks >= LOOP_POLL_RATE / (LED_FLASH_RATE * 2))
+            {
+                flash_ticks = 0;
+                jumping = false;
+                printf("TIMEOUT\n");
 
             /* Toggle LED.  */
-            //pio_output_toggle (LED_STATUS);
-        //}
+                pio_output_toggle (LED_STATUS);
+            }
+        } else if (!jumping && flash_ticks != 0) {
+            printf("JUMP DETECTED *************************** \n");
+            flash_ticks = 0;
+        }
+        
 
         fflush(stdout);
     }

@@ -21,7 +21,7 @@ static const led_cfg_t led1_cfg =
 
 static const button_cfg_t button1_cfg =
 {
-    .pio = BUTTON_PIO
+    .pio = PA31_PIO
 };
 
 int
@@ -51,7 +51,11 @@ main (void)
 
         if (button_pushed_p (button1))
         {
-            led_toggle (led1);        
+            led_set(led1, 1);     
+        }
+        else 
+        {
+            led_set(led1, 0);
         }
     }
     return 0;

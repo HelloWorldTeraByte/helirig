@@ -8,6 +8,7 @@ static twi_t twi_mpu;
 static mpu_t* mpu;
 
 double MOTOR_SPEED = 1;
+enum {POS_SAT, NEG_SAT, UNSAT};
 
 static twi_cfg_t mpu_twi_cfg =
 {
@@ -23,23 +24,45 @@ void imu_init(void){
     mpu = mpu9250_create (twi_mpu, MPU_ADDRESS);
 }
 
+bool is_in_dead_zone(double tilt){
+    if (tilt > -0.2 && tilt < 0.2){
+        return true;
+    } else{
+        return false;
+    }
+}
+
+int is_in_sat_zone(double tilt){
+    if (tilt > 1){
+        return POS_SAT;
+    } else if (tilt < -1){
+        return NEG_SAT;
+    } else {
+        return UNSAT;
+    }
+    
+}
+
 void tilt_filter(double *tilt_f, double *tilt_s){
     //active zone 0.2 rad < tilt < 1 rad
-    if (*tilt_f > 1){
+    int saturation_f = is_in_sat_zone(*tilt_f);
+    int saturation_s = is_in_sat_zone(*tilt_s);
+
+    if (saturation_f == POS_SAT){
         *tilt_f = 1; 
-    } else if (*tilt_f < -1){
+    } else if (saturation_f == NEG_SAT){
         *tilt_f = -1;
     }
-    if (*tilt_s < -1){
+    if (saturation_s == NEG_SAT){
         *tilt_s = -1;
-    } else if (*tilt_s > 1){
+    } else if (saturation_s == POS_SAT){
         *tilt_s = 1;
     }
 
-    if (*tilt_f > -0.2 && *tilt_f < 0.2){
+    if (is_in_dead_zone(*tilt_f)){
         *tilt_f = 0;
     }
-    if  (*tilt_s > -0.2 && *tilt_s < 0.2){
+    if  (is_in_dead_zone(*tilt_s)){
         *tilt_s = 0;
     }
 }
@@ -67,7 +90,22 @@ void calc_motor(double *tilt_f, double *tilt_s, double *motor1, double *motor2){
     }
 }
 
-void imu_read(int* motor_input_1_out, int* motor_input_2_out)
+void jump_detect(int accel_x, int accel_y, int accel_z, bool* mid_air){
+    double accel_mag = sqrt((abs(accel_x)^2)+(abs(accel_y)^2)+(abs(accel_z)^2));
+    printf("%f, %d\n", accel_mag, *mid_air);
+
+    if (*mid_air){
+        if (accel_mag > 190){
+            *mid_air = false;
+        }
+    } else{
+        if (accel_mag < 100){
+            *mid_air = true;
+        }
+    }
+}
+
+void imu_read(int* motor_input_1_out, int* motor_input_2_out, bool* mid_air)
 {
     if (mpu)
         {
@@ -84,6 +122,8 @@ void imu_read(int* motor_input_1_out, int* motor_input_2_out)
                     int accel_x = accel[0];
                     int accel_y = accel[1];
                     int accel_z = accel[2];
+
+                    jump_detect(accel_x, accel_y, accel_z, mid_air);
 
                     double tilt_forward = atan((double) -accel_x/accel_z); 
                     double tilt_side = atan((double) -accel_y/accel_z); 
