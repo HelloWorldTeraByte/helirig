@@ -40,10 +40,10 @@ main (void)
             ledbuffer_clear(leds);
             if (blue) {
                 ledbuffer_set(leds, 0, 0, 0, 255);
-                ledbuffer_set(leds, NUM_LEDS / 2, 0, 0, 255);
+                ledbuffer_set(leds, NUM_LEDS / 2, 102, 51, 0);
             } else {
                 ledbuffer_set(leds, 0, 255, 0, 0);
-                ledbuffer_set(leds, NUM_LEDS / 2, 255, 0, 0);
+                ledbuffer_set(leds, NUM_LEDS / 2, 255, 221, 51);
             }
             blue = !blue;
             count = 0;
