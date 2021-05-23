@@ -11,6 +11,7 @@
 #include "joystick.h"
 #include "radio_comm.h"
 #include "usb_comm.h"
+#include "power.h"
 /* Define how fast ticks occur.  This must be faster than
    TICK_RATE_MIN.  */
 enum {LOOP_POLL_RATE = 200};
@@ -18,10 +19,13 @@ enum {LOOP_POLL_RATE = 200};
 /* Define LED flash rate in Hz.  */
 enum {LED_FLASH_RATE = 10};
 
+#define BUTTON_POLL_RATE 100
+
 #define MOTOR_OFFSET 100
 
 
-void pio_init(void)
+
+void my_pio_init(void)
 {
     //leds
     pio_config_set (LED_STATUS, PIO_OUTPUT_LOW);
@@ -37,7 +41,7 @@ void pio_init(void)
 
 void hat_init(void)
 {
-    pio_init();
+    my_pio_init();
     pacer_init(10);
     usb_comm_init();
     if (pio_input_get(RADIO_JUMPER1))
@@ -53,6 +57,8 @@ void hat_init(void)
         radio_init(NRF_CHNNEL5);
     }
     imu_init();
+    power_sense_init();
+    //joystick_init();
 }
 
 int main (void)
@@ -72,10 +78,10 @@ int main (void)
     {
         /* Wait until next clock tick.  */
         pacer_wait ();
-        imu_read(&motor_input_1, &motor_input_2, &jumping);
-        get_left_speed(motor_input);
-        radio_transmit(motor_input[0]+MOTOR_OFFSET, motor_input[1]+MOTOR_OFFSET);
-        
+        //imu_read(&motor_input_1, &motor_input_2, &jumping);
+        //get_left_speed(motor_input);
+        //radio_transmit_command();
+        /*
         if (jumping){
             flash_ticks++;
 
@@ -85,13 +91,20 @@ int main (void)
                 jumping = false;
                 printf("TIMEOUT\n");
 
-            /* Toggle LED.  */
+            // Toggle LED.
                 pio_output_toggle (LED_STATUS);
             }
         } else if (!jumping && flash_ticks != 0) {
             printf("JUMP DETECTED *************************** \n");
             flash_ticks = 0;
         }
+        */
+
+       if (is_low_bat()){
+           pio_output_set(LED_LOW_BAT, 1);
+       }else{
+           pio_output_set(LED_LOW_BAT, 0);
+       }
         
 
         fflush(stdout);

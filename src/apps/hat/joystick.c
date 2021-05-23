@@ -1,9 +1,11 @@
 #include "joystick.h"
+#include "target.h"
 #include "adc.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <stdbool.h>
+#include "button.h"
 
 #define ADC_CLOCK_FREQ 24000000
 
@@ -15,6 +17,15 @@
 
 adc_t adc;
 uint16_t data[2];
+button_t button1;
+
+
+
+static const button_cfg_t button1_cfg =
+{
+    .pio = JOYSTICK_BUTTON_PIO
+};
+
 
 static const adc_cfg_t adc_cfg =
 {
@@ -25,8 +36,9 @@ static const adc_cfg_t adc_cfg =
 };
 
 
-void init_joystick(void){
+void joystick_init(void){
     adc = adc_init (&adc_cfg);
+    button1 = button_init (&button1_cfg);
 }
 
 void read_joystick(void){
