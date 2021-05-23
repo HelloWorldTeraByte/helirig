@@ -2,6 +2,16 @@
 #include "string.h"
 
 
+struct Command create_command(char cmd, int arg1 , int arg2){
+    struct Command command = 
+    {
+        .cmd = (int) cmd,
+        .arg1 = arg1,
+        .arg2 = arg2
+    };
+    return command;
+}
+
 //This function is working properly! confirmed by hank! atoi should be able to deal with negative numbers.
 struct Command str2cmd(char* string)
 {
@@ -18,23 +28,8 @@ struct Command str2cmd(char* string)
 		ptr = strtok(NULL, delim);
         i++;
 	}
-    struct Command command = 
-    {
-        .cmd = val[0],
-        .arg1 = val[1],
-        .arg2 = val[2]
-    };
-
-    return command;
+    return create_command(val[0], val[1], val[2]);
 }
 
 
-struct Command create_command(char cmd, int arg1 , int arg2){
-    struct Command command = 
-    {
-        .cmd = (int) cmd,
-        .arg1 = arg1,
-        .arg2 = arg2
-    };
-    return command;
-}
+
