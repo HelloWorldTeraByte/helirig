@@ -1,3 +1,4 @@
+#include "command.h"
 #include "stdlib.h"
 #include "string.h"
 
@@ -13,7 +14,7 @@ struct Command create_command(char cmd, int arg1 , int arg2){
 }
 
 //This function is working properly! confirmed by hank! atoi should be able to deal with negative numbers.
-struct Command str2cmd(char* string)
+struct Command str2cmd(char* buffer)
 {
     
 	char delim[] = SEPERATOR;
