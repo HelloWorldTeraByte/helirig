@@ -2,6 +2,8 @@
 #define __RADIO_COMM__H
 
 #include "stdint.h"
+#include "command.h"
+#include <stdbool.h>
 
 #define NRF_CHNNEL1 7
 #define NRF_CHNNEL2 23
@@ -16,6 +18,8 @@ void radio_init(int channel);
 
 void radio_read(char *buffer, uint8_t len);
 int8_t radio_write(char *buffer, uint8_t len);
+
+bool radio_transmit_command(struct Command cmd);
 
 #endif
 

@@ -1,7 +1,9 @@
 #include "radio_comm.h"
+#include <stdbool.h>
 #include "nrf24.h"
 #include "delay.h"
 #include "pio.h"
+#include "command.h"
 
 static nrf24_t *nrf;
 
@@ -57,9 +59,9 @@ int8_t radio_write(char *buffer, uint8_t len)
 }
 
 
-bool radio_transmit(char cmd, int arg1, int arg2){
+bool radio_transmit(struct Command cmd){
     char buffer[12] = {0};
-    sprintf (buffer, "<%u?%d?%d>", cmd, arg1, arg2);
+    sprintf (buffer, "%u?%d?%d", cmd.cmd, cmd.arg1, cmd.arg2);
     if (! nrf24_write(nrf, buffer, sizeof (buffer)))
         return false;
     else
