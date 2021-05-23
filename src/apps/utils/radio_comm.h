@@ -13,13 +13,17 @@
 #define NRF_ADDRESS1 0x1234567893
 #define NRF_PAYLOAD_SIZE 12
 
+
 static void panic(void);
 void radio_init(int channel);
 
-void radio_read(char *buffer, uint8_t len);
+//return true if data recieved.
+bool radio_read(char *buffer, uint8_t len);
 int8_t radio_write(char *buffer, uint8_t len);
 
+//api implemeatation.
 bool radio_transmit_command(struct Command cmd);
+struct Command radio_read_command(void);
 
 #endif
 

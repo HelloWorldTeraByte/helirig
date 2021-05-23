@@ -41,12 +41,13 @@ void radio_init(int channel)
         panic();
 }
 
-void radio_read(char *buffer, uint8_t len)
+bool radio_read(char *buffer, uint8_t len)
 {
     if(nrf24_read(nrf, buffer, len))
     {
-        printf("%s\n", buffer);
+        return true;
     }
+    return false;
 }
 
 int8_t radio_write(char *buffer, uint8_t len)
@@ -59,11 +60,21 @@ int8_t radio_write(char *buffer, uint8_t len)
 }
 
 
-bool radio_transmit(struct Command cmd){
+bool radio_transmit_command(struct Command cmd){
     char buffer[12] = {0};
     sprintf (buffer, "%u?%d?%d", cmd.cmd, cmd.arg1, cmd.arg2);
     if (! nrf24_write(nrf, buffer, sizeof (buffer)))
         return false;
     else
         return true;
+}
+
+struct Command radio_read_command(void){
+    char r_buff[12] = {0};
+    if (radio_read(r_buff, sizeof(r_buff))){
+        struct Command cmd = str2cmd(r_buff);
+        return cmd;
+    }else{
+        return create_command(NOTHING, 0, 0);
+    }
 }

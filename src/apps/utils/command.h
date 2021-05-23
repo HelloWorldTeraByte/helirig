@@ -8,6 +8,9 @@
 #define SERVO 'S'
 enum{SERVO_NORMAL, SERVO_RAGE}; //servo modes.
 
+#define INVALID 'I'
+#define NOTHING 'N'
+
 
 //protocal(Hank can't bother to implement starting and terminating character!)
 #define SEPERATOR "?"
