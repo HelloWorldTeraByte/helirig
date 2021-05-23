@@ -13,8 +13,10 @@ static void panic(void)
     }
 }
 
-void radio_init(void)
+void radio_init(int channel)
 {    
+
+    //configuring the spi interface.
     spi_cfg_t nrf_spi = {
         .channel = 0,
         .clock_speed_kHz = 1000,
@@ -31,7 +33,7 @@ void radio_init(void)
         panic();
 
     // initialize the NRF24 radio with its unique 5 byte address
-    if (!nrf24_begin(nrf, 2, 0x1234567893, 12))
+    if (!nrf24_begin(nrf, channel, NRF_ADDRESS1, NRF_PAYLOAD_SIZE))
         panic();
     if (!nrf24_listen(nrf))
         panic();
@@ -52,4 +54,14 @@ int8_t radio_write(char *buffer, uint8_t len)
     else
         return 0;
 
+}
+
+
+bool radio_transmit(char cmd, int arg1, int arg2){
+    char buffer[12] = {0};
+    sprintf (buffer, "<%u?%d?%d>", cmd, arg1, arg2);
+    if (! nrf24_write(nrf, buffer, sizeof (buffer)))
+        return false;
+    else
+        return true;
 }

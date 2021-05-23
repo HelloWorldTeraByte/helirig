@@ -20,23 +20,39 @@ enum {LED_FLASH_RATE = 10};
 
 #define MOTOR_OFFSET 100
 
-void led_init(void)
+
+void pio_init(void)
 {
+    //leds
     pio_config_set (LED_STATUS, PIO_OUTPUT_LOW);
     pio_config_set (LED_LOW_BAT, PIO_OUTPUT_LOW);
     pio_config_set (LED_ERROR, PIO_OUTPUT_LOW);
     pio_config_set (LED_DEBUG, PIO_OUTPUT_LOW);
+    //jumpers
+    pio_config_set (RADIO_JUMPER1, PIO_PULLDOWN);
+    pio_config_set (RADIO_JUMPER2, PIO_PULLDOWN);
+    pio_config_set (RADIO_JUMPER3, PIO_PULLDOWN);
+    pio_config_set (RADIO_JUMPER4, PIO_PULLDOWN);
 }
 
 void hat_init(void)
 {
-    led_init();
-
-    init_joystick();
+    pio_init();
     pacer_init(10);
     usb_comm_init();
+    if (pio_input_get(RADIO_JUMPER1))
+    {
+        radio_init(NRF_CHNNEL1);
+    }else if (pio_input_get(RADIO_JUMPER2)){
+        radio_init(NRF_CHNNEL2);
+    }else if (pio_input_get(RADIO_JUMPER3)){
+        radio_init(NRF_CHNNEL3);
+    }else if (pio_input_get(RADIO_JUMPER4)){
+        radio_init(NRF_CHNNEL4);
+    }else{
+        radio_init(NRF_CHNNEL5);
+    }
     imu_init();
-    radio_comm_init();
 }
 
 int main (void)
