@@ -9,7 +9,7 @@
 #include "pacer.h"
 #include "ledbuffer.h"
 
-#define NUM_LEDS 15
+#define NUM_LEDS 28
 
 /*
     This is an alternative method for driving the LED tape using the ledbuffer
@@ -24,32 +24,44 @@
 int
 main (void)
 {
-    bool blue = false;
+    bool ape = false;
     int count = 0;
+    int dpacer = 0;
 
     ledbuffer_t* leds = ledbuffer_init(LEDTAPE_PIO, NUM_LEDS);
 
-    pacer_init(30);
+    pacer_init(200);
 
     while (1)
     {
         pacer_wait();
+        if (dpacer++ == 19){
+            if (count++ == NUM_LEDS) {
 
-        if (count++ == NUM_LEDS) {
-            // wait for a revolution
-            ledbuffer_clear(leds);
-            if (blue) {
-                ledbuffer_set(leds, 0, 0, 0, 255);
-                ledbuffer_set(leds, NUM_LEDS / 2, 102, 51, 0);
-            } else {
-                ledbuffer_set(leds, 0, 255, 0, 0);
-                ledbuffer_set(leds, NUM_LEDS / 2, 255, 221, 51);
+                ledbuffer_clear(leds);
+                ledbuffer_set(leds, 0, 0, 100, 0);
+                ledbuffer_set(leds, NUM_LEDS / 8, 0, 100, 0);
+                ledbuffer_set(leds, NUM_LEDS / 4, 102, 51, 0);
+                ledbuffer_set(leds, 3 * NUM_LEDS / 8, 102, 51, 0);
+                ledbuffer_set(leds, NUM_LEDS / 2, 0, 100, 0);
+                ledbuffer_set(leds, 5 * NUM_LEDS / 8, 0, 100, 0);
+                ledbuffer_set(leds, 3 * NUM_LEDS / 4, 102, 51, 0);
+                ledbuffer_set(leds, 7 * NUM_LEDS / 8, 102, 51, 0);
+
+                 ape = !ape;
+            
+                count = 0;
             }
-            blue = !blue;
-            count = 0;
+
+            ledbuffer_write (leds);
+            if (ape) {
+                ledbuffer_advance (leds, -1);
+            } else{
+                ledbuffer_advance (leds, 1);
+            }
+            dpacer = 0;
+
         }
 
-        ledbuffer_write (leds);
-        ledbuffer_advance (leds, 1);
     }
 }
