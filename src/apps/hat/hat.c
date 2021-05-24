@@ -19,7 +19,7 @@ enum {LOOP_POLL_RATE = 200};
 /* Define LED flash rate in Hz.  */
 enum {LED_FLASH_RATE = 10};
 
-#define BUTTON_POLL_RATE 100
+#define PACER_RATE 100
 
 #define MOTOR_OFFSET 100
 
@@ -42,7 +42,7 @@ void my_pio_init(void)
 void hat_init(void)
 {
     my_pio_init();
-    pacer_init(10);
+    pacer_init(PACER_RATE);
     usb_comm_init();
     if (pio_input_get(RADIO_JUMPER1))
     {
@@ -57,8 +57,7 @@ void hat_init(void)
         radio_init(NRF_CHNNEL5);
     }
     imu_init();
-    power_sense_init();
-    //joystick_init();
+    joystick_power_sense_init(PACER_RATE);
 }
 
 int main (void)
@@ -68,9 +67,8 @@ int main (void)
 
     uint8_t flash_ticks = 0;
 
-    int motor_input[2];
-    int motor_input_1;
-    int motor_input_2;
+    struct Command command_tx = create_command(INVALID,0,0);
+    struct Command command_rx = create_command(INVALID,0,0);
 
     bool jumping;
     
@@ -78,6 +76,7 @@ int main (void)
     {
         /* Wait until next clock tick.  */
         pacer_wait ();
+        update_adc_and_button();
         //imu_read(&motor_input_1, &motor_input_2, &jumping);
         //get_left_speed(motor_input);
         //radio_transmit_command();
@@ -101,10 +100,41 @@ int main (void)
         */
 
        if (is_low_bat()){
-           pio_output_set(LED_LOW_BAT, 1);
+            pio_output_set(LED_LOW_BAT, 1);
        }else{
-           pio_output_set(LED_LOW_BAT, 0);
+            pio_output_set(LED_LOW_BAT, 0);
        }
+
+
+        //if it is in debug mode, use joystick as input. toggle by botton.
+       if (is_debug()){
+            command_tx = joystick_get_speed_command();          
+            pio_output_set(LED_DEBUG, 1);
+            
+       }else{
+            pio_output_set(LED_DEBUG, 0);
+       }
+
+
+       //radio transmit section.
+        if (radio_transmit_command(command_tx)){
+            pio_output_set(LED_STATUS, 1);
+        }else{
+            pio_output_set(LED_STATUS, 0);
+        }
+
+        command_rx = radio_read_command();
+        switch(command_rx.cmd){
+            case (int) BUMPER_STATUS:
+                if (command_rx.arg1){
+                    //car hit something!! do stuff.
+                }else{
+                    //car is fine, do normal stuff.
+                }
+                break;
+            default:
+                break;
+        }
         
 
         fflush(stdout);

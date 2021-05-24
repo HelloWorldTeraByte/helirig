@@ -17,9 +17,10 @@
 #define outer_dead_zone 100
 #define spin_threshold 300
 
-adc_t adc;
-uint16_t data[3];
-button_t button1;
+static adc_t adc;
+static uint16_t data[3];
+static button_t button1;
+static button_t button;
 
 
 
@@ -27,6 +28,12 @@ static const button_cfg_t button1_cfg =
 {
     .pio = JOYSTICK_BUTTON_PIO
 };
+
+static const button_cfg_t button_cfg =
+{
+    .pio = BUTTON_PIO
+};
+
 
 
 static const adc_cfg_t adc_cfg =
@@ -38,13 +45,26 @@ static const adc_cfg_t adc_cfg =
 };
 
 
-void joystick_init(void){
+void joystick_power_sense_init(int pacer_rate){
     adc = adc_init (&adc_cfg);
     button1 = button_init (&button1_cfg);
+    button = button_init (&button_cfg);
+    button_poll_count_set (BUTTON_POLL_COUNT (pacer_rate));
 }
 
-void read_joystick(void){
-    adc_read (adc, data, sizeof (data));
+void update_adc_and_button(void){
+    adc_read(adc, data, sizeof (data));
+    button_poll (button1);
+    button_poll (button);
+}
+
+bool is_debug(void){
+    static bool debug = false;
+    if (button_pushed_p (button)){
+        //pio_output_toggle(LED_ERROR);
+        debug = !debug;
+    }
+    return debug;
 }
 
 //forward positive and backwards negative
@@ -77,7 +97,6 @@ bool is_in_spinzone(int xval, int yval){
 
 struct Command joystick_get_speed_command(void){
     int speed_buffer[2];
-    read_joystick();
     double forward_reading = get_joystick_x();
     double side_reading = get_joystick_y();
     if (is_in_spinzone(forward_reading, side_reading)){
@@ -102,13 +121,9 @@ struct Command joystick_get_speed_command(void){
 }
 
 
-void power_sense_init(void){
-    adc = adc_init (&adc_cfg);
-}
 
 float read_bat_voltage(void){
-    adc_read (adc, data, sizeof (data));
-    int v_out =  data[0] + POWER_SENSE_CORRECTION;
+    int v_out =  data[2] + POWER_SENSE_CORRECTION;
     float v_in = (v_out * ( (double) POWER_SENSE_R1 + (double) POWER_SENSE_R2) / (double) POWER_SENSE_R2) * (3.3/4095.0);
     return v_in;
 }
