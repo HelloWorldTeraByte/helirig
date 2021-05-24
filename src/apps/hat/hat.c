@@ -12,6 +12,11 @@
 #include "radio_comm.h"
 #include "usb_comm.h"
 #include "power.h"
+#include "ledbuffer.h"
+#include "piezo.h"
+#include "piezo_beep.h"
+#include "mcu_sleep.h"
+
 /* Define how fast ticks occur.  This must be faster than
    TICK_RATE_MIN.  */
 enum {LOOP_POLL_RATE = 200};
@@ -23,7 +28,21 @@ enum {LED_FLASH_RATE = 10};
 
 #define MOTOR_OFFSET 100
 
+#define NUM_LEDS 29
 
+
+static const mcu_sleep_wakeup_cfg_t sleep_wakeup_cfg = 
+{
+    .pio = BUTTON_SLEEP_PIO,
+    .active_high = false
+};
+
+static const mcu_sleep_cfg_t sleep_cfg = 
+{
+    .mode = MCU_SLEEP_MODE_SLEEP
+};
+
+static piezo_t buzzer;
 
 void my_pio_init(void)
 {
@@ -37,6 +56,14 @@ void my_pio_init(void)
     pio_config_set (RADIO_JUMPER2, PIO_PULLDOWN);
     pio_config_set (RADIO_JUMPER3, PIO_PULLDOWN);
     pio_config_set (RADIO_JUMPER4, PIO_PULLDOWN);
+}
+
+void misc_init(void)
+{
+    const piezo_cfg_t piezo_spi = {
+        .pio = PIEZO_PIO,
+    };
+    buzzer = piezo_init(&piezo_spi);
 }
 
 void hat_init(void)
@@ -58,12 +85,16 @@ void hat_init(void)
     }
     imu_init();
     joystick_power_sense_init(PACER_RATE);
+    misc_init();
 }
 
 int main (void)
 {
     hat_init();
     
+    int led_tape_count = 0;
+
+    ledbuffer_t* leds = ledbuffer_init(LEDTAPE_PIO, NUM_LEDS);
 
     uint8_t flash_ticks = 0;
 
@@ -135,7 +166,33 @@ int main (void)
             default:
                 break;
         }
-        
+        /*
+        if (led_tape_count++ == 8) {
+            // wait for a revolution
+                ledbuffer_set(leds, 0, 255, 0, 0);
+                ledbuffer_set(leds, 1, 252, 94, 0);
+                ledbuffer_set(leds, 2, 255, 211, 0);
+                ledbuffer_set(leds, 3, 11, 252, 3);
+                ledbuffer_set(leds, 4, 3, 102, 252);
+                ledbuffer_set(leds, 5, 3, 3, 252);
+                ledbuffer_set(leds, 6, 123, 3, 252);
+                ledbuffer_set(leds, 7, 255, 255, 255);
+            led_tape_count = 0;
+            piezo_beep(buzzer, 1000);
+        }
+        ledbuffer_write (leds);
+        ledbuffer_advance (leds, 1);
+        */
+        if (joystick_button_pushed()){
+            pio_output_toggle(LED_ERROR);
+        }
+
+       if (go_sleep()){
+           mcu_sleep_wakeup_set(&sleep_wakeup_cfg);
+           mcu_sleep(&sleep_cfg);
+       }
+
+
 
         fflush(stdout);
     }

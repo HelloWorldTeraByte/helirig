@@ -18,9 +18,10 @@
 #define spin_threshold 300
 
 static adc_t adc;
-static uint16_t data[3];
+static volatile uint16_t data[3];
 static button_t button1;
 static button_t button;
+static button_t button_sleep;
 
 
 
@@ -33,6 +34,12 @@ static const button_cfg_t button_cfg =
 {
     .pio = BUTTON_PIO
 };
+
+static const button_cfg_t button_sleep_cfg =
+{
+    .pio = BUTTON_SLEEP_PIO
+};
+
 
 
 
@@ -49,19 +56,40 @@ void joystick_power_sense_init(int pacer_rate){
     adc = adc_init (&adc_cfg);
     button1 = button_init (&button1_cfg);
     button = button_init (&button_cfg);
+    button_sleep = button_init (&button_sleep_cfg);
     button_poll_count_set (BUTTON_POLL_COUNT (pacer_rate));
 }
 
 void update_adc_and_button(void){
-    adc_read(adc, data, sizeof (data));
+    uint16_t my_data[3];
+    adc_read(adc, my_data, sizeof (data));
+    data[0] = my_data[0];
+    data[1] = my_data[1];
+    data[2] = my_data[2];
     button_poll (button1);
     button_poll (button);
+    button_poll (button_sleep);
+}
+
+
+bool go_sleep(void){
+    if (button_pushed_p (button_sleep)){
+        pio_output_toggle(LED_ERROR);
+        return true;
+    }
+    return false;
+}
+
+bool joystick_button_pushed(void){
+    if (button_pushed_p (button1)){
+        return true;
+    }
+    return false;
 }
 
 bool is_debug(void){
     static bool debug = false;
     if (button_pushed_p (button)){
-        //pio_output_toggle(LED_ERROR);
         debug = !debug;
     }
     return debug;
