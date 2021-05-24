@@ -69,5 +69,8 @@
 #define RADIO_JUMPER3 PA29_PIO
 #define RADIO_JUMPER4 PA28_PIO
 
+#define PIEZO_PIO PB4_PIO
+#define LEDTAPE_PIO PA10_PIO
+
 
 #endif /* TARGET_H  */
