@@ -13,18 +13,23 @@
 #include "usb_comm.h"
 #include "power.h"
 #include "ledbuffer.h"
-#include "piezo.h"
-#include "piezo_beep.h"
 #include "mcu_sleep.h"
+#include "buzzer.h"
 
 /* Define how fast ticks occur.  This must be faster than
    TICK_RATE_MIN.  */
-enum {LOOP_POLL_RATE = 200};
+#define LOOP_POLL_RATE 200
+
+//config rates
+#define ADC_RATE 10
+#define RADIO_RATE 10
+#define IMU_RATE 10
+#define ONE_SECOND_RATE 1
+
 
 /* Define LED flash rate in Hz.  */
 enum {LED_FLASH_RATE = 10};
 
-#define PACER_RATE 100
 
 #define MOTOR_OFFSET 100
 
@@ -42,7 +47,7 @@ static const mcu_sleep_cfg_t sleep_cfg =
     .mode = MCU_SLEEP_MODE_SLEEP
 };
 
-static piezo_t buzzer;
+
 
 void my_pio_init(void)
 {
@@ -58,18 +63,11 @@ void my_pio_init(void)
     pio_config_set (RADIO_JUMPER4, PIO_PULLDOWN);
 }
 
-void misc_init(void)
-{
-    const piezo_cfg_t piezo_spi = {
-        .pio = PIEZO_PIO,
-    };
-    buzzer = piezo_init(&piezo_spi);
-}
 
 void hat_init(void)
 {
     my_pio_init();
-    pacer_init(PACER_RATE);
+    pacer_init(LOOP_POLL_RATE);
     usb_comm_init();
     if (pio_input_get(RADIO_JUMPER1))
     {
@@ -84,8 +82,8 @@ void hat_init(void)
         radio_init(NRF_CHNNEL5);
     }
     imu_init();
-    joystick_power_sense_init(PACER_RATE);
-    misc_init();
+    joystick_power_sense_init(LOOP_POLL_RATE);
+    buzzer_init();
 }
 
 int main (void)
@@ -98,6 +96,11 @@ int main (void)
 
     uint8_t flash_ticks = 0;
 
+    int imu_ticks = 0;
+    int radio_ticks = 0;
+    int adc_tick = 0;
+    int one_second_tick = 0;
+
     struct Command command_tx = create_command(INVALID,0,0);
     struct Command command_rx = create_command(INVALID,0,0);
 
@@ -105,9 +108,32 @@ int main (void)
     
     while (1)
     {
-        /* Wait until next clock tick.  */
+
+        /*ticks increment*/
+        imu_ticks++;
+        radio_ticks++;
+        adc_tick++;
+        one_second_tick++;
+
+
+        /* pacer */
         pacer_wait ();
-        update_adc_and_button();
+
+        /* update button */
+        update_button();
+
+        /* update adc */
+        if (adc_tick >= LOOP_POLL_RATE / (ADC_RATE * 2))
+        {
+            update_adc();
+            adc_tick = 0;
+            
+        }
+        
+
+
+
+
         //imu_read(&motor_input_1, &motor_input_2, &jumping);
         //get_left_speed(motor_input);
         //radio_transmit_command();
@@ -129,12 +155,19 @@ int main (void)
             flash_ticks = 0;
         }
         */
-
-       if (is_low_bat()){
-            pio_output_set(LED_LOW_BAT, 1);
-       }else{
-            pio_output_set(LED_LOW_BAT, 0);
-       }
+       if (one_second_tick >= LOOP_POLL_RATE / (ONE_SECOND_RATE * 2))
+        {
+        /*one second task start.*/
+            //check bat.
+            if (is_low_bat()){
+                pio_output_set(LED_LOW_BAT, 1);
+            }else{
+                pio_output_set(LED_LOW_BAT, 0);
+            }
+            //do something.
+        /*one second task ends.*/
+            one_second_tick = 0;
+        }
 
 
         //if it is in debug mode, use joystick as input. toggle by botton.
@@ -148,19 +181,33 @@ int main (void)
 
 
        //radio transmit section.
-        if (radio_transmit_command(command_tx)){
-            pio_output_set(LED_STATUS, 1);
-        }else{
-            pio_output_set(LED_STATUS, 0);
-        }
 
-        command_rx = radio_read_command();
+       if (radio_ticks >= LOOP_POLL_RATE / (RADIO_RATE * 2))
+        {
+            if (radio_transmit_command(command_tx)){
+                pio_output_set(LED_STATUS, 1);
+            }else{
+                pio_output_set(LED_STATUS, 0);
+            }
+            command_rx = radio_read_command();
+            radio_ticks = 0;
+        }
+        
+        
+
+
+
+
+        //execute intake commands.
         switch(command_rx.cmd){
             case (int) BUMPER_STATUS:
                 if (command_rx.arg1){
                     //car hit something!! do stuff.
+                    buzzer_beep(1);
+                    pio_output_set(LED_ERROR, 1);
                 }else{
                     //car is fine, do normal stuff.
+                    pio_output_set(LED_ERROR, 0);
                 }
                 break;
             default:
@@ -183,8 +230,13 @@ int main (void)
         ledbuffer_write (leds);
         ledbuffer_advance (leds, 1);
         */
+
+
+       
         if (joystick_button_pushed()){
-            pio_output_toggle(LED_ERROR);
+
+            //do some stuff.
+            buzzer_beep(200);
         }
 
        if (go_sleep()){
