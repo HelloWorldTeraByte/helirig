@@ -62,11 +62,13 @@ int8_t radio_write(char *buffer, uint8_t len)
 
 bool radio_transmit_command(struct Command cmd){
     char buffer[12] = {0};
+    bool retval = true;
     sprintf (buffer, "%u?%d?%d", cmd.cmd, cmd.arg1, cmd.arg2);
-    if (! nrf24_write(nrf, buffer, sizeof (buffer)))
-        return false;
-    else
-        return true;
+    if (! nrf24_write(nrf, buffer, sizeof (buffer))){
+        retval = false;
+    }
+    nrf24_listen(nrf);
+    return retval;
 }
 
 struct Command radio_read_command(void){
