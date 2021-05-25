@@ -360,13 +360,13 @@ adc_sync (adc_t adc)
 
     channels = adc->channels;
     for (max_channel = 0; channels; max_channel++)
-        channels >= 1;
+        channels >>= 1;
     do
     {
         adc_read (adc, &dummy, sizeof (dummy));
     } while ((dummy >> 12) != max_channel);
         
-    adc_tag_get (adc, 0);
+    adc_tag_set (adc, 0);
     adc_config (adc);    
 }
 
@@ -387,7 +387,7 @@ adc_init (const adc_cfg_t *cfg)
     if (adc_devices_num >= ADC_DEVICES_NUM)
         return 0;
 
-    if (cfg->channels == 0 and cfg->channel >= ADC_CHANNEL_NUM)
+    if ((cfg->channels == 0) && (cfg->channel >= ADC_CHANNEL_NUM))
         return 0;
 
     if (adc_devices_num == 0)
