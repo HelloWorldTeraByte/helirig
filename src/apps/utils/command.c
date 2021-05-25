@@ -1,6 +1,7 @@
 #include "command.h"
 #include "stdlib.h"
 #include "string.h"
+#include 
 
 struct Command create_command(char cmd, int arg1 , int arg2){
     struct Command command = 
@@ -28,4 +29,17 @@ struct Command str2cmd(char* buffer)
         i++;
 	}
     return create_command(val[0], val[1], val[2]);
+}
+
+
+struct Command create_bumper_command(bool activated){
+    return create_command(BUMPER_STATUS, activated, 0);
+}
+
+struct Command create_motor_command(int left_speed, int right_speed){
+    return create_command(MOTOR_SPEED, left_speed, right_speed);
+}
+
+struct Command create_servo_command(int mode, int persentage){
+    return create_command(SERVO, mode, persentage);
 }

@@ -25,4 +25,8 @@ struct Command str2cmd(char* string);
 struct Command create_command(char cmd, int arg1 , int arg2);
 
 
+struct Command create_bumper_command(bool activated);
+struct Command create_motor_command(int left_speed, int right_speed);
+struct Command create_servo_command(int mode, int persentage);
+
 #endif
