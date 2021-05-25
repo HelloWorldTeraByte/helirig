@@ -27,17 +27,7 @@ static pwm_t mtr_l_pwm;
 static pwm_t mtr_r_pwm;
 static uint8_t b_motor_locked;
  
-void motors_init(void)
-{
-    mtr_l_pwm = pwm_init(&mtr_l_pwm_cfg);
-    mtr_r_pwm = pwm_init(&mtr_r_pwm_cfg);
- 
-   pwm_channels_start(pwm_channel_mask(mtr_l_pwm) | pwm_channel_mask(mtr_r_pwm));
-   
-   pio_config_set(MOTOR_SLEEP_PIO, PIO_OUTPUT_HIGH);
 
-   b_motor_locked = 0;
-}
 
 void motor_left_set(int8_t speed)
 {
@@ -70,6 +60,8 @@ void motor_left_set(int8_t speed)
     }
 }
 
+
+
 void motor_right_set(int8_t speed)
 {    
     if(b_motor_locked)
@@ -100,6 +92,21 @@ void motor_right_set(int8_t speed)
         // set PA0 as PWM
         pio_config_set(MOTOR_RIGHT_PWM_PIO_1, PIO_PERIPH_A);
     }
+}
+
+
+void motors_init(void)
+{
+    mtr_l_pwm = pwm_init(&mtr_l_pwm_cfg);
+    mtr_r_pwm = pwm_init(&mtr_r_pwm_cfg);
+ 
+   pwm_channels_start(pwm_channel_mask(mtr_l_pwm) | pwm_channel_mask(mtr_r_pwm));
+   
+   
+   pio_config_set(MOTOR_SLEEP_PIO, PIO_OUTPUT_HIGH);
+   motor_left_set(0);
+   motor_right_set(0);
+   b_motor_locked = 0;
 }
 
 void motor_lock(void)
