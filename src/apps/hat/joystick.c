@@ -17,8 +17,11 @@
 #define outer_dead_zone 100
 #define spin_threshold 300
 
+#define JOYSTICK_SENSITIVITY 0.5
+
 static adc_t adc;
-static volatile uint16_t data[3];
+//static volatile uint16_t data[3];
+static volatile uint16_t data[2];
 static button_t button1;
 static button_t button;
 static button_t button_sleep;
@@ -42,7 +45,7 @@ static const button_cfg_t button_sleep_cfg =
 
 
 
-
+/*
 static const adc_cfg_t adc_cfg =
 {
     .bits = 12,
@@ -50,6 +53,16 @@ static const adc_cfg_t adc_cfg =
     .trigger = ADC_TRIGGER_SW,
     .clock_speed_kHz = ADC_CLOCK_FREQ / 1000
 };
+*/
+
+static const adc_cfg_t adc_cfg =
+{
+    .bits = 12,
+    .channels = BIT (ADC_CHANNEL_0) | BIT (ADC_CHANNEL_1),
+    .trigger = ADC_TRIGGER_SW,
+    .clock_speed_kHz = ADC_CLOCK_FREQ / 1000
+};
+
 
 
 void joystick_power_sense_init(int pacer_rate){
@@ -60,12 +73,16 @@ void joystick_power_sense_init(int pacer_rate){
     button_poll_count_set (BUTTON_POLL_COUNT (pacer_rate));
 }
 
-void update_adc_and_button(void){
+void update_adc(void){
     uint16_t my_data[3];
+    //adc_sync(adc);
     adc_read(adc, my_data, sizeof (data));
     data[0] = my_data[0];
     data[1] = my_data[1];
-    data[2] = my_data[2];
+    //data[2] = my_data[2];
+}
+
+void update_button(void){
     button_poll (button1);
     button_poll (button);
     button_poll (button_sleep);
@@ -74,7 +91,7 @@ void update_adc_and_button(void){
 
 bool go_sleep(void){
     if (button_pushed_p (button_sleep)){
-        pio_output_toggle(LED_ERROR);
+        //pio_output_toggle(LED_ERROR);
         return true;
     }
     return false;
@@ -131,8 +148,8 @@ struct Command joystick_get_speed_command(void){
         speed_buffer[0] = side_reading/(adc_max_reading/2.0) * 100;
         speed_buffer[1] = -side_reading/(adc_max_reading/2.0) * 100;
     }else if(!is_in_deadzone(forward_reading)){
-        speed_buffer[0] = (forward_reading+side_reading)/(adc_max_reading/2.0) * 100;
-        speed_buffer[1] = (forward_reading-side_reading)/(adc_max_reading/2.0) * 100;
+        speed_buffer[0] = (forward_reading+(side_reading*JOYSTICK_SENSITIVITY))/(adc_max_reading/2.0) * 100;
+        speed_buffer[1] = (forward_reading-(side_reading*JOYSTICK_SENSITIVITY))/(adc_max_reading/2.0) * 100;
     }else{
         speed_buffer[0] = 0;
         speed_buffer[1] = 0;
@@ -149,11 +166,15 @@ struct Command joystick_get_speed_command(void){
 }
 
 
-
+/*
 float read_bat_voltage(void){
     int v_out =  data[2] + POWER_SENSE_CORRECTION;
     float v_in = (v_out * ( (double) POWER_SENSE_R1 + (double) POWER_SENSE_R2) / (double) POWER_SENSE_R2) * (3.3/4095.0);
     return v_in;
+}
+*/
+float read_bat_voltage(void){
+    return 5.0;
 }
 
 bool is_low_bat(void){
