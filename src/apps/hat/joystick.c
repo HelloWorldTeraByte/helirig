@@ -21,8 +21,7 @@
 
 static adc_t adc;
 static bool is_power_sense;
-//static volatile uint16_t data[3];
-static volatile uint16_t data[2];
+static volatile uint16_t data[3];
 static volatile button_t button1;
 static button_t button;
 static button_t button_sleep;
@@ -94,14 +93,14 @@ void update_adc(void){
     //adc_sync(adc);
     if(is_power_sense){
         uint16_t my_data[1];
-        adc_read(adc, my_data, sizeof (data));
+        adc_read(adc, my_data, sizeof (my_data));
         data[0] = 0;
         data[1] = 0;
         data[2] = my_data[0];
 
     }else{//joystick
         uint16_t my_data[2];
-        adc_read(adc, my_data, sizeof (data));
+        adc_read(adc, my_data, sizeof (my_data));
         data[0] = my_data[0];
         data[1] = my_data[1];
         data[2] = 0;
