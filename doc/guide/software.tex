@@ -379,7 +379,8 @@ different options for PWM2.
 
 To drive the motors you will need to use a bench power supply. Start
 with the current limit set at 100\,mA maximum in case there are any
-board shorts.  When all is well, you can increase the current limit.
+board shorts.  When all is well, you can increase the current limit;
+you will need at least 1\,A.
 
 \subsection{IMU test}
 \label{imu-test}
@@ -396,22 +397,16 @@ If you get `ERROR: can't find MPU9250!', the main reasons are:
 
 \begin{enumerate}
 \item
-  You have specified the incorrect address. Use \code{MPU_0} if the
-  AD0 pin is connected to ground otherwise use \code{MPU_1}.
+  You have specified the incorrect address.  Use 0x68 for
+  \code{MPU_ADDRESS} in \file{target.h} if the AD0 pin is connected to
+  ground otherwise use 0x69.
 \item
-  You are using TWI1. The \pin{PB4} and \pin{PB5} pins used by TWI1 default to JTAG
-  pins. See \protect\hyperref[disabling-jtag-pins]{disabling JTAG pins}.
-\item
-  You do not have TWI/I2C pull-up resistors connected to 3V3 or the
-  wrong resistor values. Use a scope to look at the signals \pin{TWCK/SCL}
-  and \pin{TWD/SDA}.
-\item
-  Check that the auxiliary I2C bus signals are not connected
-  (otherwise the magnetometer will not respond).  
-\item
-  You have a soldering problem. Try pressing on a side of the IMU with a
-  fingernail to see if it starts working; you might have a dry joint.
+  You are using TWI1. The \pin{PB4} and \pin{PB5} pins used by TWI1
+  default to JTAG pins. See
+  \protect\hyperref[disabling-jtag-pins]{disabling JTAG pins}.
 \end{enumerate}
+%
+See also \protect\hyperref[checking-IMU]{IMU checking}.
 
 Other problems:
 %
@@ -448,6 +443,11 @@ Notes:
   hardware. If no acknowledgement is received, it retries for up to 15
   times. The auto-acknowledgement and number of retries can be
   configured in software.
+
+\item If the program hangs in the \code{panic} loop, there is no
+  response from the radio module, check SPI connections and see
+  \hyperref[debugging_Spi]{SPI debugging}.
+  
 \end{enumerate}
 
 If you cannot communicate between your hat and racer boards, try

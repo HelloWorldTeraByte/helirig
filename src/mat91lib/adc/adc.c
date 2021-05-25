@@ -346,6 +346,31 @@ adc_disable (adc_t adc)
 }
 
 
+/** The ADC multiplexer is not reset on a soft reset.
+    Note, this disables tagging.  */
+void
+adc_sync (adc_t adc)
+{
+    uint16_t channels;
+    uint16_t dummy = 0;
+    uint8_t max_channel;
+    
+    adc_tag_set (adc, 1);
+    adc_config (adc);
+
+    channels = adc->channels;
+    for (max_channel = 0; channels; max_channel++)
+        channels >= 1;
+    do
+    {
+        adc_read (adc, &dummy, sizeof (dummy));
+    } while ((dummy >> 12) != max_channel);
+        
+    adc_tag_get (adc, 0);
+    adc_config (adc);    
+}
+
+
 /** Initalises the ADC registers for polling operation.  */
 adc_t
 adc_init (const adc_cfg_t *cfg)
@@ -360,6 +385,9 @@ adc_init (const adc_cfg_t *cfg)
         };
     
     if (adc_devices_num >= ADC_DEVICES_NUM)
+        return 0;
+
+    if (cfg->channels == 0 and cfg->channel >= ADC_CHANNEL_NUM)
         return 0;
 
     if (adc_devices_num == 0)
@@ -389,6 +417,12 @@ adc_init (const adc_cfg_t *cfg)
     /* Note, the ADC is not configured until adc_config called.  */
     adc_config (adc);
 
+#if 0
+    /* Synchronise ADC multiplexer.  */
+    if (cfg->channels != 0)
+        adc_sync (adc);
+#endif
+    
 #if 0
     /* I'm not sure why a dummy read is required; it is probably a
        quirk of the SAM7.  This will require a software trigger... */
@@ -480,5 +514,3 @@ adc_convert_bipolar (adc_sample_t *src, int16_t *dst, uint16_t samples)
 
     return dst;
 }
-
-
