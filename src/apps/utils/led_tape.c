@@ -43,11 +43,11 @@ ledbuffer_t* ledt_init(void)
 
 void ledt_run(bool ape, ledbuffer_t* ledsr)
 {
-    
-            if (ape) {
-                ledbuffer_advance (ledsr, -1);
-            } else{
-                ledbuffer_advance (ledsr, 1);
-            }
-    ledbuffer_write (ledsr);
+    if (ape) {
+        ledbuffer_advance(ledsr, -1);
+    }
+    else {
+        ledbuffer_advance(ledsr, 1);
+    }
+    ledbuffer_write(ledsr);
 }

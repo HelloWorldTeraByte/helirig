@@ -26,4 +26,3 @@ bool radio_transmit_command(struct Command cmd);
 struct Command radio_read_command(void);
 
 #endif
-

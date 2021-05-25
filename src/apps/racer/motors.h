@@ -9,4 +9,7 @@ void motors_init(void);
 void motor_left_set(int8_t speed);
 void motor_right_set(int8_t speed);
 
+void motor_lock(void);
+void motor_unlock(void);
+
 #endif
