@@ -10,14 +10,13 @@ static nrf24_t *nrf;
 static void panic(void)
 {
     while (1) {
-        pio_output_toggle(LED2_PIO);
+        pio_output_toggle(LED_STAT1);
         delay_ms(100);
     }
 }
 
 void radio_init(int channel)
 {    
-
     //configuring the spi interface.
     spi_cfg_t nrf_spi = {
         .channel = 0,
@@ -59,9 +58,8 @@ int8_t radio_write(char *buffer, uint8_t len)
 
 }
 
-
 bool radio_transmit_command(struct Command cmd){
-    char buffer[12] = {0};
+    char buffer[NRF_PAYLOAD_SIZE] = {0};
     sprintf (buffer, "%u?%d?%d", cmd.cmd, cmd.arg1, cmd.arg2);
     if (! nrf24_write(nrf, buffer, sizeof (buffer)))
         return false;
@@ -70,7 +68,7 @@ bool radio_transmit_command(struct Command cmd){
 }
 
 struct Command radio_read_command(void){
-    char r_buff[12] = {0};
+    char r_buff[NRF_PAYLOAD_SIZE] = {0};
     if (radio_read(r_buff, sizeof(r_buff))){
         struct Command cmd = str2cmd(r_buff);
         return cmd;

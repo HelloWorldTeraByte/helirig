@@ -25,6 +25,7 @@ static const pwm_cfg_t mtr_r_pwm_cfg =
 
 static pwm_t mtr_l_pwm;
 static pwm_t mtr_r_pwm;
+static uint8_t b_motor_locked;
  
 void motors_init(void)
 {
@@ -34,10 +35,14 @@ void motors_init(void)
    pwm_channels_start(pwm_channel_mask(mtr_l_pwm) | pwm_channel_mask(mtr_r_pwm));
    
    pio_config_set(MOTOR_SLEEP_PIO, PIO_OUTPUT_HIGH);
+
+   b_motor_locked = 0;
 }
 
 void motor_left_set(int8_t speed)
 {
+    if(b_motor_locked)
+        return;
     // Speed [-100 - +100] sets the PWM duty cycle and pin modes appropriately
     //Clamps the speed between -100 and 100
     if(speed > 100)
@@ -66,7 +71,10 @@ void motor_left_set(int8_t speed)
 }
 
 void motor_right_set(int8_t speed)
-{
+{    
+    if(b_motor_locked)
+        return;
+ 
     // Speed [-100 - +100] sets the PWM duty cycle and pin modes appropriately
     //Clamps the speed between -100 and 100
     if(speed > 100)
@@ -93,3 +101,14 @@ void motor_right_set(int8_t speed)
         pio_config_set(MOTOR_RIGHT_PWM_PIO_1, PIO_PERIPH_A);
     }
 }
+
+void motor_lock(void)
+{
+    b_motor_locked = 1;
+}
+
+void motor_unlock(void)
+{
+    b_motor_locked = 0;
+}
+
