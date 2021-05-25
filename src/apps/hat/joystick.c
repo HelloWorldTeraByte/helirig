@@ -23,7 +23,7 @@ static adc_t adc;
 static bool is_power_sense;
 //static volatile uint16_t data[3];
 static volatile uint16_t data[2];
-static button_t button1;
+static volatile button_t button1;
 static button_t button;
 static button_t button_sleep;
 
@@ -65,30 +65,30 @@ static const adc_cfg_t adc_cfg1 =
 };
 
 
+void my_adc_init(void){
+    if (pio_input_get(BUTTON_PIO)) //active low. 
+    {
+        adc = adc_init (&adc_cfg2); //low-voltage
+        is_power_sense = true;  
+    } else {
+             
+        adc = adc_init (&adc_cfg1); //JOYSTICK
+        is_power_sense = false;  
+    }
+}
+
 
 void joystick_power_sense_init(int pacer_rate){
     button1 = button_init (&button1_cfg);
     button = button_init (&button_cfg);
     button_sleep = button_init (&button_sleep_cfg);
     button_poll_count_set (BUTTON_POLL_COUNT (pacer_rate));
-    adc_init();
+    my_adc_init();
 }
 
 
 /*this function must be called after button init*/
-void adc_init(void){
-    if (pio_input_get(BUTTON_PIO)) //active low. 
-    {
-        adc = adc_init (&adc_cfg2); //low-voltage
-        pio_output_high(LED_ERROR);  
-        is_power_sense = true;  
-    } else {
-             
-        adc = adc_init (&adc_cfg1); //JOYSTICK
-        pio_output_high(LED_STATUS);
-        is_power_sense = false;  
-    }
-}
+
 
 void update_adc(void){
     //adc_sync(adc);
@@ -116,18 +116,11 @@ void update_button(void){
 
 
 bool go_sleep(void){
-    if (button_pushed_p (button_sleep)){
-        //pio_output_toggle(LED_ERROR);
-        return true;
-    }
-    return false;
+    return (button_pushed_p (button_sleep));
 }
 
 bool joystick_button_pushed(void){
-    if (button_pushed_p (button1)){
-        return true;
-    }
-    return false;
+    return button_pushed_p (button1);
 }
 
 bool is_debug(void){
