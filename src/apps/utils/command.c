@@ -1,7 +1,6 @@
 #include "command.h"
 #include "stdlib.h"
 #include "string.h"
-#include 
 
 struct Command create_command(char cmd, int arg1 , int arg2){
     struct Command command = 

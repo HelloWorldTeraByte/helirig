@@ -14,6 +14,7 @@ enum{SERVO_NORMAL, SERVO_RAGE}; //servo modes.
 //protocal(Hank can't bother to implement starting and terminating character!)
 #define SEPERATOR "?"
 
+#include <stdbool.h>
 //command struct.
 struct Command{
     int cmd;
