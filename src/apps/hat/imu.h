@@ -1,7 +1,7 @@
 #ifndef IMU_H_
 #define IMU_H_
 
-void imu_read(int* motor_input_1_out, int* motor_input_2_out, bool* mid_air);
+struct Command imu_get_speed_command(void);
 void imu_init(void);
 
 

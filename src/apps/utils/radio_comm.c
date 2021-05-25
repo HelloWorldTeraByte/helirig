@@ -10,7 +10,7 @@ static nrf24_t *nrf;
 static void panic(void)
 {
     while (1) {
-        pio_output_toggle(LED_STAT1);
+        pio_output_toggle(LED1_PIO);
         delay_ms(100);
     }
 }
@@ -59,12 +59,9 @@ int8_t radio_write(char *buffer, uint8_t len)
 }
 
 bool radio_transmit_command(struct Command cmd){
-<<<<<<< HEAD
-    char buffer[12] = {0};
-    bool retval = true;
-=======
     char buffer[NRF_PAYLOAD_SIZE] = {0};
->>>>>>> a6126a96803c42d1da14d17e3a8fd93dc5f1edf7
+    bool retval = true;
+
     sprintf (buffer, "%u?%d?%d", cmd.cmd, cmd.arg1, cmd.arg2);
     if (! nrf24_write(nrf, buffer, sizeof (buffer))){
         retval = false;

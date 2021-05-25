@@ -2,12 +2,17 @@
 #include <stdio.h>
 #include "imu.h"
 #include "mpu9250.h"
+#include "command.h"
 #include <math.h>
 
 static twi_t twi_mpu;
 static mpu_t* mpu;
 
-double MOTOR_SPEED = 1;
+int jump_counter = 0;
+bool mid_air = false;
+bool jump_flag = false;
+bool rage_flag = false;
+
 enum {POS_SAT, NEG_SAT, UNSAT};
 
 static twi_cfg_t mpu_twi_cfg =
@@ -70,13 +75,13 @@ void tilt_filter(double *tilt_f, double *tilt_s){
 void calc_motor(double *tilt_f, double *tilt_s, double *motor1, double *motor2){
     if (*tilt_s > 0 && *tilt_f == 0){
         *motor1 = 0;
-        *motor2 = MOTOR_SPEED * (1+*tilt_s)/2;
+        *motor2 = (1+*tilt_s)/2;
     } else if ( *tilt_s < 0 && *tilt_f == 0){
-        *motor1 = MOTOR_SPEED * (1-*tilt_s)/2;
+        *motor1 = (1-*tilt_s)/2;
         *motor2 = 0;
     } else {
-        *motor1 = MOTOR_SPEED * *tilt_f * (1-*tilt_s);
-        *motor2 = MOTOR_SPEED * *tilt_f * (1+*tilt_s);
+        *motor1 = *tilt_f * (1-*tilt_s);
+        *motor2 = *tilt_f * (1+*tilt_s);
     }
     if (*motor1 > 1){
         *motor1 = 1;
@@ -90,60 +95,69 @@ void calc_motor(double *tilt_f, double *tilt_s, double *motor1, double *motor2){
     }
 }
 
-void jump_detect(int accel_x, int accel_y, int accel_z, bool* mid_air){
+bool jump_detect(int accel_x, int accel_y, int accel_z, bool mid_air){
     double accel_mag = sqrt((abs(accel_x)^2)+(abs(accel_y)^2)+(abs(accel_z)^2));
-    printf("%f, %d\n", accel_mag, *mid_air);
+    bool come_down = false;
 
-    if (*mid_air){
+    printf("%f, %d\n", accel_mag, mid_air);
+
+    if (mid_air){
         if (accel_mag > 190){
-            *mid_air = false;
+            return true;
         }
     } else{
         if (accel_mag < 100){
-            *mid_air = true;
+            return false;
         }
     }
 }
 
-void imu_read(int* motor_input_1_out, int* motor_input_2_out, bool* mid_air)
+struct Command imu_get_speed_command(void)
 {
-    if (mpu)
+    int motor_input_1_out;
+    int motor_input_2_out;
+
+    int16_t accel[3];
+    mpu9250_read_accel(mpu, accel);
+
+    int accel_x = accel[0];
+    int accel_y = accel[1];
+    int accel_z = accel[2];
+
+    jump_flag = jump_detect(accel_x, accel_y, accel_z, mid_air);
+    if (mid_air){
+        jump_counter++;
+
+        if (jump_flag){
+            rage_flag = true;
+            mid_air = false;
+            jump_counter = 0;
+        } 
+        if (jump_counter >= 10)
         {
-            /* read in the accelerometer data */
-            if (! mpu9250_is_imu_ready (mpu))
-            {
-                printf("Waiting for IMU to be ready...\n");
-            }
-            else
-            {
-                int16_t accel[3];
-                if (mpu9250_read_accel(mpu, accel)) {
+            jump_counter = 0;
+            mid_air = false;
+            printf("TIMEOUT\n");
+        }
+    } else {
+        rage_flag = false;
+    }
 
-                    int accel_x = accel[0];
-                    int accel_y = accel[1];
-                    int accel_z = accel[2];
-
-                    jump_detect(accel_x, accel_y, accel_z, mid_air);
-
-                    double tilt_forward = atan((double) -accel_x/accel_z); 
-                    double tilt_side = atan((double) -accel_y/accel_z); 
-                    //double tilt_mag;
-                    //calculate the magnitude of tilt to control speed? v2 idea
+    double tilt_forward = atan((double) -accel_x/accel_z); 
+    double tilt_side = atan((double) -accel_y/accel_z); 
+    //double tilt_mag;
+    //calculate the magnitude of tilt to control speed? v2 idea
                     
-                    double motor_input_1;
-                    double motor_input_2;
+    double motor_input_1;
+    double motor_input_2;
                     // the motors are organised in the following configuration:
                     // front
                     // 1   2
-                    tilt_filter(&tilt_forward, &tilt_side);
-                    calc_motor(&tilt_forward, &tilt_side, &motor_input_1, &motor_input_2);
+    tilt_filter(&tilt_forward, &tilt_side);
+    calc_motor(&tilt_forward, &tilt_side, &motor_input_1, &motor_input_2);
                     
-                    *motor_input_1_out = (int) (motor_input_1 * 100);
-                    *motor_input_2_out = (int) (motor_input_2 * 100);
-                } else
-                    printf("ERROR: failed to read acceleration\n");
-            }
-        } else
-            printf("ERROR: can't find MPU9250!\n");
-
+    motor_input_1_out = (int) (motor_input_1 * 100);
+    motor_input_2_out = (int) (motor_input_2 * 100);
+                    
+    return create_command(MOTOR_SPEED, motor_input_1_out, motor_input_2_out);
 }

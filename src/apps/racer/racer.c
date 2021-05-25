@@ -36,7 +36,7 @@ void racer_init(void)
 {
     gpio_init();
 
-    radio_init(NRF_CHNNEL3);
+    radio_init(NRF_CHNNEL1);
 
     /*Choose a radio channel*/
     //if(pio_input_get(RADIO_JUMPER1)) {
@@ -121,10 +121,15 @@ int main(void)
         {
             loop_u_ticks = 0;
 
-            //command_tx = create_command(BUMPER_STATUS, 1, 0);
-            //radio_transmit_command(command_tx);
+            if (bumper_is_hit()){
+                command_tx = create_bumper_command(true);
+            }else{
+                command_tx = create_bumper_command(false);
+            }
+            
 
             command_rx = radio_read_command();
+            radio_transmit_command(command_tx);
             switch (command_rx.cmd)
             {
             case (int)MOTOR_SPEED:
