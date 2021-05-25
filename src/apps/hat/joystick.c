@@ -20,6 +20,7 @@
 #define JOYSTICK_SENSITIVITY 0.5
 
 static adc_t adc;
+static bool is_power_sense;
 //static volatile uint16_t data[3];
 static volatile uint16_t data[2];
 static button_t button1;
@@ -45,17 +46,17 @@ static const button_cfg_t button_sleep_cfg =
 
 
 
-/*
-static const adc_cfg_t adc_cfg =
+
+static const adc_cfg_t adc_cfg2 =
 {
     .bits = 12,
-    .channels = BIT (ADC_CHANNEL_0) | BIT (ADC_CHANNEL_1) | BIT (ADC_CHANNEL_3),
+    .channels = BIT (ADC_CHANNEL_3),
     .trigger = ADC_TRIGGER_SW,
     .clock_speed_kHz = ADC_CLOCK_FREQ / 1000
 };
-*/
 
-static const adc_cfg_t adc_cfg =
+
+static const adc_cfg_t adc_cfg1 =
 {
     .bits = 12,
     .channels = BIT (ADC_CHANNEL_0) | BIT (ADC_CHANNEL_1),
@@ -66,20 +67,45 @@ static const adc_cfg_t adc_cfg =
 
 
 void joystick_power_sense_init(int pacer_rate){
-    adc = adc_init (&adc_cfg);
     button1 = button_init (&button1_cfg);
     button = button_init (&button_cfg);
     button_sleep = button_init (&button_sleep_cfg);
     button_poll_count_set (BUTTON_POLL_COUNT (pacer_rate));
+    adc_init();
+}
+
+
+/*this function must be called after button init*/
+void adc_init(void){
+    if (pio_input_get(BUTTON_PIO)) //active low. 
+    {
+        adc = adc_init (&adc_cfg2); //low-voltage
+        pio_output_high(LED_ERROR);  
+        is_power_sense = true;  
+    } else {
+             
+        adc = adc_init (&adc_cfg1); //JOYSTICK
+        pio_output_high(LED_STATUS);
+        is_power_sense = false;  
+    }
 }
 
 void update_adc(void){
-    uint16_t my_data[3];
     //adc_sync(adc);
-    adc_read(adc, my_data, sizeof (data));
-    data[0] = my_data[0];
-    data[1] = my_data[1];
-    //data[2] = my_data[2];
+    if(is_power_sense){
+        uint16_t my_data[1];
+        adc_read(adc, my_data, sizeof (data));
+        data[0] = 0;
+        data[1] = 0;
+        data[2] = my_data[0];
+
+    }else{//joystick
+        uint16_t my_data[2];
+        adc_read(adc, my_data, sizeof (data));
+        data[0] = my_data[0];
+        data[1] = my_data[1];
+        data[2] = 0;
+    }
 }
 
 void update_button(void){
@@ -105,11 +131,7 @@ bool joystick_button_pushed(void){
 }
 
 bool is_debug(void){
-    static bool debug = false;
-    if (button_pushed_p (button)){
-        debug = !debug;
-    }
-    return debug;
+    return !is_power_sense;
 }
 
 //forward positive and backwards negative
@@ -166,16 +188,13 @@ struct Command joystick_get_speed_command(void){
 }
 
 
-/*
+
 float read_bat_voltage(void){
     int v_out =  data[2] + POWER_SENSE_CORRECTION;
     float v_in = (v_out * ( (double) POWER_SENSE_R1 + (double) POWER_SENSE_R2) / (double) POWER_SENSE_R2) * (3.3/4095.0);
     return v_in;
 }
-*/
-float read_bat_voltage(void){
-    return 5.0;
-}
+
 
 bool is_low_bat(void){
     float v_in = read_bat_voltage();
