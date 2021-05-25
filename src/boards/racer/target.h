@@ -47,6 +47,7 @@ p 1000
 
 /* LEDs  */
 #define LED_STAT0 PA4_PIO
+#define LED1_PIO PA4_PIO
 #define LED_STAT1 PA3_PIO
 #define LED_LOW_BATT PA2_PIO
 

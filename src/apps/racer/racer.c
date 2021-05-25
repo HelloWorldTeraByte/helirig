@@ -9,6 +9,7 @@
 #include "ledbuffer.h"
 #include "led_tape.h"
 #include "bumper.h"
+#include "delay.h"
 
 #include "stdlib.h"
 #include "string.h"
@@ -62,6 +63,20 @@ void racer_init(void)
     bumper_init();
 
     pacer_init(LOOP_POLL_RATE);
+
+    delay_ms(100); 
+    if (pio_input_get(RADIO_JUMPER1))
+    {
+        radio_init(NRF_CHNNEL1);
+    }else if (pio_input_get(RADIO_JUMPER2)){
+        radio_init(NRF_CHNNEL2);
+    //}else if (pio_input_get(RADIO_JUMPER3)){
+      //  radio_init(NRF_CHNNEL3);
+    }else if (pio_input_get(RADIO_JUMPER4)){
+        radio_init(NRF_CHNNEL4);
+    }else{
+        radio_init(NRF_CHNNEL5);
+    }
 }
 
 void racer_power_manage(void)
