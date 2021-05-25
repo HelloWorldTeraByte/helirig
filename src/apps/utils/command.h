@@ -1,7 +1,7 @@
 #ifndef __COMMAND__H
 #define __COMMAND__H
 
-//define commands
+//define commands#include <stdbool.h>
 #define MOTOR_SPEED 'M'
 #define BUMPER_STATUS 'B'
 #define SERVO 'S'
