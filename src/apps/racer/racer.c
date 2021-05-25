@@ -10,9 +10,21 @@
 #include "led_tape.h"
 #include "bumper.h"
 #include "delay.h"
+#include "mcu_sleep.h"
 
 #include "stdlib.h"
 #include "string.h"
+
+static const mcu_sleep_wakeup_cfg_t sleep_wakeup_cfg = 
+{
+    .pio = BUTTON_WAKEUP_PIO,
+    .active_high = false
+};
+
+static const mcu_sleep_cfg_t sleep_cfg = 
+{
+    .mode = MCU_SLEEP_MODE_SLEEP
+};
 
 void gpio_init(void)
 {
@@ -81,10 +93,17 @@ void racer_init(void)
 
 void racer_power_manage(void)
 {
-    if(power_is_batt_low())
+    // TODO: turn off H bridge, LED Tape, radio
+    if(power_is_batt_low()) {
         pio_config_set(LED_LOW_BATT, PIO_OUTPUT_LOW);
-    else
+        motors_sleep();
+        mcu_sleep_wakeup_set(&sleep_wakeup_cfg);
+        mcu_sleep(&sleep_cfg);
+    }
+    else {
+        //TODO: Wakeup the motors?
         pio_config_set(LED_LOW_BATT, PIO_OUTPUT_HIGH);
+    }
 }
 
 void racer_bumper_manage(void)

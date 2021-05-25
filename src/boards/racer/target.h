@@ -58,7 +58,7 @@ p 1000
 //#define SERVO_PWM_PIO PA2_PIO
 
 /* Button  */
-#define BUTTON_PIO PA8_PIO
+#define BUTTON_WAKEUP_PIO PA8_PIO
 
 #define BUMPER_PIO PA31_PIO
 
