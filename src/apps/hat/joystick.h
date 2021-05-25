@@ -10,4 +10,7 @@ bool go_sleep(void);
 bool joystick_button_pushed(void);
 
 
+float read_bat_voltage(void);
+bool is_low_bat(void);
+
 #endif /*JOYSTICK_H_*/
