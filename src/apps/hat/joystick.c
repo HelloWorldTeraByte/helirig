@@ -128,14 +128,14 @@ bool is_debug(void){
 
 //forward positive and backwards negative
 int get_joystick_x(void){
-    return data[1] - center_val;
+    return data[0] - center_val;
 }
 
 
 
 //left positive, right negative.
 int get_joystick_y(void){
-    return data[0] - center_val;
+    return data[1] - center_val;
 }
 
 bool is_in_deadzone(int val){

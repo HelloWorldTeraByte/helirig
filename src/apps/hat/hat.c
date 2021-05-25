@@ -63,22 +63,18 @@ void my_pio_init(void)
     pio_config_set (RADIO_JUMPER2, PIO_PULLDOWN);
     pio_config_set (RADIO_JUMPER3, PIO_PULLDOWN);
     pio_config_set (RADIO_JUMPER4, PIO_PULLDOWN);
-    
-    pio_init(RADIO_JUMPER1);
-    pio_init(RADIO_JUMPER2);
-    pio_init(RADIO_JUMPER3);
-    pio_init(RADIO_JUMPER4);
 }
 
 
 void hat_init(void)
 {
     pacer_init(LOOP_POLL_RATE);
-    usb_comm_init();
+    //usb_comm_init();
     imu_init();
     joystick_power_sense_init(LOOP_POLL_RATE);
     buzzer_init();
-    my_pio_init();    
+    my_pio_init();   
+    delay_ms(100); 
     if (pio_input_get(RADIO_JUMPER1))
     {
         radio_init(NRF_CHNNEL1);
@@ -197,10 +193,10 @@ int main (void)
                 if (command_rx.arg1){
                     //car hit something!! do stuff.
                     buzzer_beep(1);
-                    pio_output_set(LED_ERROR, 1);
+                    //pio_output_set(LED_ERROR, 1);
                 }else{
                     //car is fine, do normal stuff.
-                    pio_output_set(LED_ERROR, 0);
+                    //pio_output_set(LED_ERROR, 0);
                 }
                 break;
             default:
@@ -210,19 +206,19 @@ int main (void)
 
        
         if (joystick_button_pushed()){
-            pio_output_toggle(LED_ERROR);
+            //pio_output_toggle(LED_ERROR);
         }
 
 
         
        if (go_sleep()){
-           pio_output_toggle(LED_ERROR);
-           //mcu_sleep_wakeup_set(&sleep_wakeup_cfg);
-           //mcu_sleep(&sleep_cfg);
+           //pio_output_toggle(LED_ERROR);
+           mcu_sleep_wakeup_set(&sleep_wakeup_cfg);
+           mcu_sleep(&sleep_cfg);
        }
 
 
 
-        fflush(stdout);
+        //fflush(stdout);
     }
 }
