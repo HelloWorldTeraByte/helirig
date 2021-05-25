@@ -24,5 +24,6 @@ int8_t radio_write(char *buffer, uint8_t len);
 //api implemeatation.
 bool radio_transmit_command(struct Command cmd);
 struct Command radio_read_command(void);
+struct Command radio_rx_and_tx(struct Command cmd);
 
 #endif

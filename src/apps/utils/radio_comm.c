@@ -79,3 +79,10 @@ struct Command radio_read_command(void){
         return create_command(NOTHING, 0, 0);
     }
 }
+
+
+struct Command radio_rx_and_tx(struct Command cmd){
+    struct Command retval = radio_read_command();
+    radio_transmit_command(cmd);
+    return retval;
+}
