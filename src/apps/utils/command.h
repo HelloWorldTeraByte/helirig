@@ -3,6 +3,7 @@
 
 //define commands#include <stdbool.h>
 #define MOTOR_SPEED 'M'
+#define LOCK_MOTOR 'L'
 #define BUMPER_STATUS 'B'
 #define SERVO 'S'
 enum{SERVO_NORMAL, SERVO_RAGE}; //servo modes.
@@ -29,5 +30,6 @@ struct Command create_command(char cmd, int arg1 , int arg2);
 struct Command create_bumper_command(bool activated);
 struct Command create_motor_command(int left_speed, int right_speed);
 struct Command create_servo_command(int servo_num, bool activate);
+struct Command create_lock_motor_command(bool locked);
 
 #endif

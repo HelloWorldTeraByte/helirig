@@ -40,5 +40,10 @@ struct Command create_motor_command(int left_speed, int right_speed){
 }
 
 struct Command create_servo_command(int servo_num, bool activate) {
-    return create_command(SERVO, servo_num, 0);
+    return create_command(SERVO, servo_num, activate);
+}
+
+
+struct Command create_lock_motor_command(bool locked) {
+    return create_command(LOCK_MOTOR, locked, 0);
 }
