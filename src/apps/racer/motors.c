@@ -27,14 +27,19 @@ static pwm_t mtr_l_pwm;
 static pwm_t mtr_r_pwm;
 static uint8_t b_motor_locked;
 
-void motors_wakeup(void)
+void motors_init(void)
 {
+    mtr_l_pwm = pwm_init(&mtr_l_pwm_cfg);
+    mtr_r_pwm = pwm_init(&mtr_r_pwm_cfg);
+ 
+   pwm_channels_start(pwm_channel_mask(mtr_l_pwm) | pwm_channel_mask(mtr_r_pwm));
+   
    pio_config_set(MOTOR_SLEEP_PIO, PIO_OUTPUT_HIGH);
-}
 
-void motors_sleep(void)
-{
-   pio_config_set(MOTOR_SLEEP_PIO, PIO_OUTPUT_LOW);
+   motor_left_set(0);
+   motor_right_set(0);
+
+   b_motor_locked = 0;
 }
 
 void motors_wakeup(void)
@@ -78,8 +83,6 @@ void motor_left_set(int8_t speed)
     }
 }
 
-
-
 void motor_right_set(int8_t speed)
 {    
     if(b_motor_locked)
@@ -112,29 +115,15 @@ void motor_right_set(int8_t speed)
     }
 }
 
-
-void motors_init(void)
-{
-    mtr_l_pwm = pwm_init(&mtr_l_pwm_cfg);
-    mtr_r_pwm = pwm_init(&mtr_r_pwm_cfg);
- 
-   pwm_channels_start(pwm_channel_mask(mtr_l_pwm) | pwm_channel_mask(mtr_r_pwm));
-   
-   pio_config_set(MOTOR_SLEEP_PIO, PIO_OUTPUT_HIGH);
-   motor_left_set(0);
-   motor_right_set(0);
-   b_motor_locked = 0;
-}
-
 void motor_lock(void)
 {
+    b_motor_locked = 1;
+
     motor_left_set(0);
     motor_right_set(0);
-    b_motor_locked = 1;
 }
 
 void motor_unlock(void)
 {
     b_motor_locked = 0;
 }
-

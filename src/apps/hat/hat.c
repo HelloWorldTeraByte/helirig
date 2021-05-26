@@ -80,8 +80,8 @@ void hat_init(void)
         radio_init(NRF_CHNNEL1);
     }else if (pio_input_get(RADIO_JUMPER2)){
         radio_init(NRF_CHNNEL2);
-    //}else if (pio_input_get(RADIO_JUMPER3)){
-      //  radio_init(NRF_CHNNEL3);
+    }else if (pio_input_get(RADIO_JUMPER3)){
+        radio_init(NRF_CHNNEL3);
     }else if (pio_input_get(RADIO_JUMPER4)){
         radio_init(NRF_CHNNEL4);
     }else{

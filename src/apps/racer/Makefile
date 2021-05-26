@@ -2,7 +2,7 @@ PERIPHERALS = pwm pit adc
 DRIVERS = pacer led rf usb_serial ledtape button
 TARGET = racer.bin
 
-SRC = racer.c motors.c servos.c bumper.c power.c ./utils/radio_comm.c ../utils/usb_comm.c ../utils/command.c ../utils/led_tape.c ../utils/ledbuffer.c 
+SRC = racer.c motors.c servos.c bumper.c power.c buttons.c servos.c ./utils/radio_comm.c ../utils/usb_comm.c ../utils/command.c ../utils/led_tape.c ../utils/ledbuffer.c 
 OPT = -O0
 
 ifneq ($(BOARD), racer)
