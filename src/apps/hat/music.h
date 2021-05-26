@@ -89,7 +89,7 @@
 #define NOTE_DS8 4978
 #define REST      0
 
-enum{MUSIC_CANNON, MUSIC_NOKIA, MUSIC_NUM_MAX};
+enum{MUSIC_CANNON, MUSIC_NOKIA, MUSIC_MARIO, MUSIC_STARWAR, MUSIC_NUM_MAX};
 
 struct Music{
     int tempo;
@@ -160,7 +160,7 @@ static struct Music cannon = {
 // a 4 means a quarter note, 8 an eighteenth , 16 sixteenth, so on
 // !!negative numbers are used to represent dotted notes,
 // so -4 means a dotted quarter note, that is, a quarter plus an eighteenth!!
-int Nokia_melody[] = {
+static int Nokia_melody[] = {
 
   // Nokia Ringtone 
   // Score available at https://musescore.com/user/29944637/scores/5266155
@@ -176,5 +176,142 @@ static struct Music nokia = {
     .tempo = 180,
     .melody = Nokia_melody,
     .notes = sizeof(Nokia_melody)/ sizeof(Nokia_melody[0]) / 2,
+    .pointer = 0
+};
+
+
+static int mario_melody[] = {
+
+  // Super Mario Bros theme
+  // Score available at https://musescore.com/user/2123/scores/2145
+  // Theme by Koji Kondo
+  
+  
+  NOTE_E5,8, NOTE_E5,8, REST,8, NOTE_E5,8, REST,8, NOTE_C5,8, NOTE_E5,8, //1
+  NOTE_G5,4, REST,4, NOTE_G4,8, REST,4, 
+  NOTE_C5,-4, NOTE_G4,8, REST,4, NOTE_E4,-4, // 3
+  NOTE_A4,4, NOTE_B4,4, NOTE_AS4,8, NOTE_A4,4,
+  NOTE_G4,-8, NOTE_E5,-8, NOTE_G5,-8, NOTE_A5,4, NOTE_F5,8, NOTE_G5,8,
+  REST,8, NOTE_E5,4,NOTE_C5,8, NOTE_D5,8, NOTE_B4,-4,
+  NOTE_C5,-4, NOTE_G4,8, REST,4, NOTE_E4,-4, // repeats from 3
+  NOTE_A4,4, NOTE_B4,4, NOTE_AS4,8, NOTE_A4,4,
+  NOTE_G4,-8, NOTE_E5,-8, NOTE_G5,-8, NOTE_A5,4, NOTE_F5,8, NOTE_G5,8,
+  REST,8, NOTE_E5,4,NOTE_C5,8, NOTE_D5,8, NOTE_B4,-4,
+
+  
+  REST,4, NOTE_G5,8, NOTE_FS5,8, NOTE_F5,8, NOTE_DS5,4, NOTE_E5,8,//7
+  REST,8, NOTE_GS4,8, NOTE_A4,8, NOTE_C4,8, REST,8, NOTE_A4,8, NOTE_C5,8, NOTE_D5,8,
+  REST,4, NOTE_DS5,4, REST,8, NOTE_D5,-4,
+  NOTE_C5,2, REST,2,
+
+  REST,4, NOTE_G5,8, NOTE_FS5,8, NOTE_F5,8, NOTE_DS5,4, NOTE_E5,8,//repeats from 7
+  REST,8, NOTE_GS4,8, NOTE_A4,8, NOTE_C4,8, REST,8, NOTE_A4,8, NOTE_C5,8, NOTE_D5,8,
+  REST,4, NOTE_DS5,4, REST,8, NOTE_D5,-4,
+  NOTE_C5,2, REST,2,
+
+  NOTE_C5,8, NOTE_C5,4, NOTE_C5,8, REST,8, NOTE_C5,8, NOTE_D5,4,//11
+  NOTE_E5,8, NOTE_C5,4, NOTE_A4,8, NOTE_G4,2,
+
+  NOTE_C5,8, NOTE_C5,4, NOTE_C5,8, REST,8, NOTE_C5,8, NOTE_D5,8, NOTE_E5,8,//13
+  REST,1, 
+  NOTE_C5,8, NOTE_C5,4, NOTE_C5,8, REST,8, NOTE_C5,8, NOTE_D5,4,
+  NOTE_E5,8, NOTE_C5,4, NOTE_A4,8, NOTE_G4,2,
+  NOTE_E5,8, NOTE_E5,8, REST,8, NOTE_E5,8, REST,8, NOTE_C5,8, NOTE_E5,4,
+  NOTE_G5,4, REST,4, NOTE_G4,4, REST,4, 
+  NOTE_C5,-4, NOTE_G4,8, REST,4, NOTE_E4,-4, // 19
+  
+  NOTE_A4,4, NOTE_B4,4, NOTE_AS4,8, NOTE_A4,4,
+  NOTE_G4,-8, NOTE_E5,-8, NOTE_G5,-8, NOTE_A5,4, NOTE_F5,8, NOTE_G5,8,
+  REST,8, NOTE_E5,4, NOTE_C5,8, NOTE_D5,8, NOTE_B4,-4,
+
+  NOTE_C5,-4, NOTE_G4,8, REST,4, NOTE_E4,-4, // repeats from 19
+  NOTE_A4,4, NOTE_B4,4, NOTE_AS4,8, NOTE_A4,4,
+  NOTE_G4,-8, NOTE_E5,-8, NOTE_G5,-8, NOTE_A5,4, NOTE_F5,8, NOTE_G5,8,
+  REST,8, NOTE_E5,4, NOTE_C5,8, NOTE_D5,8, NOTE_B4,-4,
+
+  NOTE_E5,8, NOTE_C5,4, NOTE_G4,8, REST,4, NOTE_GS4,4,//23
+  NOTE_A4,8, NOTE_F5,4, NOTE_F5,8, NOTE_A4,2,
+  NOTE_D5,-8, NOTE_A5,-8, NOTE_A5,-8, NOTE_A5,-8, NOTE_G5,-8, NOTE_F5,-8,
+  
+  NOTE_E5,8, NOTE_C5,4, NOTE_A4,8, NOTE_G4,2, //26
+  NOTE_E5,8, NOTE_C5,4, NOTE_G4,8, REST,4, NOTE_GS4,4,
+  NOTE_A4,8, NOTE_F5,4, NOTE_F5,8, NOTE_A4,2,
+  NOTE_B4,8, NOTE_F5,4, NOTE_F5,8, NOTE_F5,-8, NOTE_E5,-8, NOTE_D5,-8,
+  NOTE_C5,8, NOTE_E4,4, NOTE_E4,8, NOTE_C4,2,
+
+  NOTE_E5,8, NOTE_C5,4, NOTE_G4,8, REST,4, NOTE_GS4,4,//repeats from 23
+  NOTE_A4,8, NOTE_F5,4, NOTE_F5,8, NOTE_A4,2,
+  NOTE_D5,-8, NOTE_A5,-8, NOTE_A5,-8, NOTE_A5,-8, NOTE_G5,-8, NOTE_F5,-8,
+  
+  NOTE_E5,8, NOTE_C5,4, NOTE_A4,8, NOTE_G4,2, //26
+  NOTE_E5,8, NOTE_C5,4, NOTE_G4,8, REST,4, NOTE_GS4,4,
+  NOTE_A4,8, NOTE_F5,4, NOTE_F5,8, NOTE_A4,2,
+  NOTE_B4,8, NOTE_F5,4, NOTE_F5,8, NOTE_F5,-8, NOTE_E5,-8, NOTE_D5,-8,
+  NOTE_C5,8, NOTE_E4,4, NOTE_E4,8, NOTE_C4,2,
+  NOTE_C5,8, NOTE_C5,4, NOTE_C5,8, REST,8, NOTE_C5,8, NOTE_D5,8, NOTE_E5,8,
+  REST,1,
+
+  NOTE_C5,8, NOTE_C5,4, NOTE_C5,8, REST,8, NOTE_C5,8, NOTE_D5,4, //33
+  NOTE_E5,8, NOTE_C5,4, NOTE_A4,8, NOTE_G4,2,
+  NOTE_E5,8, NOTE_E5,8, REST,8, NOTE_E5,8, REST,8, NOTE_C5,8, NOTE_E5,4,
+  NOTE_G5,4, REST,4, NOTE_G4,4, REST,4, 
+  NOTE_E5,8, NOTE_C5,4, NOTE_G4,8, REST,4, NOTE_GS4,4,
+  NOTE_A4,8, NOTE_F5,4, NOTE_F5,8, NOTE_A4,2,
+  NOTE_D5,-8, NOTE_A5,-8, NOTE_A5,-8, NOTE_A5,-8, NOTE_G5,-8, NOTE_F5,-8,
+  
+  NOTE_E5,8, NOTE_C5,4, NOTE_A4,8, NOTE_G4,2, //40
+  NOTE_E5,8, NOTE_C5,4, NOTE_G4,8, REST,4, NOTE_GS4,4,
+  NOTE_A4,8, NOTE_F5,4, NOTE_F5,8, NOTE_A4,2,
+  NOTE_B4,8, NOTE_F5,4, NOTE_F5,8, NOTE_F5,-8, NOTE_E5,-8, NOTE_D5,-8,
+  NOTE_C5,8, NOTE_E4,4, NOTE_E4,8, NOTE_C4,2,
+  
+  //game over sound
+  NOTE_C5,-4, NOTE_G4,-4, NOTE_E4,4, //45
+  NOTE_A4,-8, NOTE_B4,-8, NOTE_A4,-8, NOTE_GS4,-8, NOTE_AS4,-8, NOTE_GS4,-8,
+  NOTE_G4,8, NOTE_D4,8, NOTE_E4,-2,  
+
+};
+
+
+static struct Music mario = {
+    .tempo = 200,
+    .melody = mario_melody,
+    .notes = sizeof(mario_melody)/ sizeof(mario_melody[0]) / 2,
+    .pointer = 0
+};
+
+
+static int star_war_melody[] = {
+  
+  // Dart Vader theme (Imperial March) - Star wars 
+  // Score available at https://musescore.com/user/202909/scores/1141521
+  // The tenor saxophone part was used
+  
+  NOTE_AS4,8, NOTE_AS4,8, NOTE_AS4,8,//1
+  NOTE_F5,2, NOTE_C6,2,
+  NOTE_AS5,8, NOTE_A5,8, NOTE_G5,8, NOTE_F6,2, NOTE_C6,4,  
+  NOTE_AS5,8, NOTE_A5,8, NOTE_G5,8, NOTE_F6,2, NOTE_C6,4,  
+  NOTE_AS5,8, NOTE_A5,8, NOTE_AS5,8, NOTE_G5,2, NOTE_C5,8, NOTE_C5,8, NOTE_C5,8,
+  NOTE_F5,2, NOTE_C6,2,
+  NOTE_AS5,8, NOTE_A5,8, NOTE_G5,8, NOTE_F6,2, NOTE_C6,4,  
+  
+  NOTE_AS5,8, NOTE_A5,8, NOTE_G5,8, NOTE_F6,2, NOTE_C6,4, //8  
+  NOTE_AS5,8, NOTE_A5,8, NOTE_AS5,8, NOTE_G5,2, NOTE_C5,-8, NOTE_C5,16, 
+  NOTE_D5,-4, NOTE_D5,8, NOTE_AS5,8, NOTE_A5,8, NOTE_G5,8, NOTE_F5,8,
+  NOTE_F5,8, NOTE_G5,8, NOTE_A5,8, NOTE_G5,4, NOTE_D5,8, NOTE_E5,4,NOTE_C5,-8, NOTE_C5,16,
+  NOTE_D5,-4, NOTE_D5,8, NOTE_AS5,8, NOTE_A5,8, NOTE_G5,8, NOTE_F5,8,
+  
+  NOTE_C6,-8, NOTE_G5,16, NOTE_G5,2, REST,8, NOTE_C5,8,//13
+  NOTE_D5,-4, NOTE_D5,8, NOTE_AS5,8, NOTE_A5,8, NOTE_G5,8, NOTE_F5,8,
+  NOTE_F5,8, NOTE_G5,8, NOTE_A5,8, NOTE_G5,4, NOTE_D5,8, NOTE_E5,4,NOTE_C6,-8, NOTE_C6,16,
+  NOTE_F6,4, NOTE_DS6,8, NOTE_CS6,4, NOTE_C6,8, NOTE_AS5,4, NOTE_GS5,8, NOTE_G5,4, NOTE_F5,8,
+  NOTE_C6,1
+  
+};
+
+static struct Music star_war = {
+    .tempo = 108,
+    .melody = star_war_melody,
+    .notes = sizeof(star_war_melody)/ sizeof(star_war_melody[0]) / 2,
     .pointer = 0
 };
