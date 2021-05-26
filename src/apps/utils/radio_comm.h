@@ -13,7 +13,6 @@
 #define NRF_ADDRESS1 0x1234567893
 #define NRF_PAYLOAD_SIZE 12
 
-
 static void panic(void);
 void radio_init(int channel);
 

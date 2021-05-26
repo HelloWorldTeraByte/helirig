@@ -14,7 +14,6 @@ static const button_cfg_t bumper_cfg =
 
 void bumper_init(void)
 {
-    /* Initialise button.  */
     bumper = button_init(&bumper_cfg);
     bumper_timeout = 0;
 }

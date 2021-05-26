@@ -12,4 +12,7 @@ void motor_right_set(int8_t speed);
 void motor_lock(void);
 void motor_unlock(void);
 
+void motors_wakeup(void);
+void motors_sleep(void);
+
 #endif

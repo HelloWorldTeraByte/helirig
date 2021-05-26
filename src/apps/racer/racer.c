@@ -2,6 +2,7 @@
 #include "pacer.h"
 #include "pio.h"
 #include "motors.h"
+#include "servos.h"
 #include "radio_comm.h"
 #include "servos.h"
 #include "usb_comm.h"
@@ -9,10 +10,28 @@
 #include "ledbuffer.h"
 #include "led_tape.h"
 #include "bumper.h"
+#include "buttons.h"
 #include "delay.h"
+#include "mcu_sleep.h"
 
 #include "stdlib.h"
 #include "string.h"
+
+//TODO:TX and RX radio at different frequncies
+// Sleep
+// Servos
+// Enable the motors with a command
+
+static const mcu_sleep_wakeup_cfg_t sleep_wakeup_cfg = 
+{
+    .pio = BUTTON_WAKEUP_PIO,
+    .active_high = false
+};
+
+static const mcu_sleep_cfg_t sleep_cfg = 
+{
+    .mode = MCU_SLEEP_MODE_WAIT
+};
 
 void gpio_init(void)
 {
@@ -37,23 +56,10 @@ void racer_init(void)
 {
     gpio_init();
 
-    radio_init(NRF_CHNNEL1);
-
-    /*Choose a radio channel*/
-    //if(pio_input_get(RADIO_JUMPER1)) {
-    //    radio_init(NRF_CHNNEL1);
-    //}else if(pio_input_get(RADIO_JUMPER3)){
-    //    radio_init(NRF_CHNNEL3);
-    //}else if(pio_input_get(RADIO_JUMPER4)){
-    //    radio_init(NRF_CHNNEL4);
-    //}else if(pio_input_get(RADIO_JUMPER2)){
-    //    radio_init(NRF_CHNNEL2);
-    //}else {
-    //    radio_init(NRF_CHNNEL5);
-    //}
-
     /* Initilize the motors*/
     motors_init();
+
+    servos_init();
 
     /* Initilize the USB communication interface*/
     usb_comm_init();
@@ -62,16 +68,20 @@ void racer_init(void)
 
     bumper_init();
 
+    btns_init();
+    
+    mcu_sleep_wakeup_set(&sleep_wakeup_cfg);
+
     pacer_init(LOOP_POLL_RATE);
 
     delay_ms(100); 
     if (pio_input_get(RADIO_JUMPER1))
     {
         radio_init(NRF_CHNNEL1);
-    }else if (pio_input_get(RADIO_JUMPER2)){
-        radio_init(NRF_CHNNEL2);
-    //}else if (pio_input_get(RADIO_JUMPER3)){
-      //  radio_init(NRF_CHNNEL3);
+    //}else if (pio_input_get(RADIO_JUMPER2)){
+        //radio_init(NRF_CHNNEL2);
+    }else if (pio_input_get(RADIO_JUMPER3)){
+        radio_init(NRF_CHNNEL3);
     }else if (pio_input_get(RADIO_JUMPER4)){
         radio_init(NRF_CHNNEL4);
     }else{
@@ -81,10 +91,24 @@ void racer_init(void)
 
 void racer_power_manage(void)
 {
-    if(power_is_batt_low())
+    // TODO: turn off H bridge, LED Tape, radio
+    if(power_is_batt_low()) {
         pio_config_set(LED_LOW_BATT, PIO_OUTPUT_LOW);
-    else
+        //motors_sleep();
+   }
+    else {
+        //TODO: Wakeup the motors?
         pio_config_set(LED_LOW_BATT, PIO_OUTPUT_HIGH);
+    }
+}
+
+void racer_io_manage(void)
+{
+    btns_update();
+    if(is_btn0_pressed()) {
+        pio_config_set(LED_STAT0, PIO_OUTPUT_LOW);
+        mcu_sleep(&sleep_cfg);
+    }
 }
 
 void racer_bumper_manage(void)
@@ -136,12 +160,12 @@ int main(void)
         {
             loop_u_ticks = 0;
 
+            //TODO:Move this the bumper manage
             if (bumper_is_hit()){
                 command_tx = create_bumper_command(true);
             }else{
                 command_tx = create_bumper_command(false);
             }
-            
 
             command_rx = radio_read_command();
             radio_transmit_command(command_tx);
@@ -155,7 +179,9 @@ int main(void)
                 break;
             }
             racer_bumper_manage();
-       }
+
+            racer_io_manage();
+        }
 
         //if(dpacer++ == 19) {
         //    ledt_run(ape_mode, ledsr);
