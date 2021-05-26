@@ -89,7 +89,7 @@
 #define NOTE_DS8 4978
 #define REST      0
 
-enum{MUSIC_CANNON, MUSIC_NOKIA, MUSIC_MARIO, MUSIC_STARWAR, MUSIC_NUM_MAX};
+
 
 struct Music{
     int tempo;

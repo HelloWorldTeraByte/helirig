@@ -74,7 +74,7 @@ void hat_init(void)
     //usb_comm_init();
     imu_init();
     joystick_power_sense_init(LOOP_POLL_RATE);
-    buzzer_init();
+    buzzer_init(LOOP_POLL_RATE);
     my_pio_init();   
 
 

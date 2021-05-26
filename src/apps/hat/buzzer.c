@@ -3,14 +3,13 @@
 #include "target.h"
 #include "mcu.h"
 #include "pwm.h"
-#include "pio.h"
+#include <pio.h>
 #include <stdbool.h>
 #include "buzzer.h"
-
 #include "music.h"
 
 
-#define PWM_FREQ_HZ 100e3
+#define PWM_FREQ_HZ 240
 
 static const pwm_cfg_t pwm_cfg =
 {
@@ -41,21 +40,9 @@ void buzzer_init(int pacer_rate){
 
 
 
-long get_tempo(int *tempo_array, int size, int index){
-
-}
-
-
-
-void buzzer_music_select(int music){
-    song_select = music;
-}
-
-
-
-
-void buzzer_music_play(void){
+void buzzer_music_play(int music){
     pwm_start(pwm);
+    song_select = music;
     is_playing = true;
 }
 
@@ -70,12 +57,18 @@ void buzzer_music_stop(struct Music *music){
     music->pointer = 0;
 }
 
-void buzzer_music_restart(struct Music *music){
+void buzzer_music_reset(struct Music *music){
     music->pointer = 0;
 }
 
-void buzzer_beep(uint16_t ms){
-
+void buzzer_toggle(void){
+    static is_on = false;
+    if (is_on){
+        pwm_start(pwm);
+    }else{
+        pwm_stop(pwm);
+    }
+    is_on = !is_on;
 }
 
 
@@ -130,6 +123,12 @@ void buzzer_update(void){
                     break;
                 case MUSIC_NOKIA:
                     play_tone(&nokia);
+                    break;
+                case MUSIC_MARIO:
+                    play_tone(&mario);
+                    break;
+                case MUSIC_STARWAR:
+                    play_tone(&star_war);
                     break;
                 default:
                     break;
