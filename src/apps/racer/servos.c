@@ -24,3 +24,9 @@ void servo1_duty_set(uint8_t duty)
 {
     pwm_duty_set(servo1, PWM_DUTY_DIVISOR(SERVO_PWM_FREQ_HZ, duty));
 }
+
+void servo_drop_bananas(void)
+{
+
+}
+

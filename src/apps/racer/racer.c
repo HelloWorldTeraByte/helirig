@@ -46,6 +46,12 @@ void gpio_init(void)
     pio_config_set(RADIO_JUMPER3, PIO_PULLDOWN);
     pio_config_set(RADIO_JUMPER4, PIO_PULLDOWN);
 
+    pio_irq_config_t pio_sleep_cfg = PIO_IRQ_FALLING_EDGE;
+    pio_config_set(BUTTON_WAKEUP_PIO, PIO_PULLUP);
+    pio_irq_config_set(BUTTON_WAKEUP_PIO, pio_sleep_cfg);
+    pio_irq_enable(BUTTON_WAKEUP_PIO);
+    mcu_sleep_wakeup_set(&sleep_wakeup_cfg);
+
     pio_init(RADIO_JUMPER1);
     pio_init(RADIO_JUMPER2);
     pio_init(RADIO_JUMPER3);
@@ -62,15 +68,13 @@ void racer_init(void)
     servos_init();
 
     /* Initilize the USB communication interface*/
-    usb_comm_init();
+    //usb_comm_init();
 
     power_sense_init();
 
     bumper_init();
 
     btns_init();
-    
-    mcu_sleep_wakeup_set(&sleep_wakeup_cfg);
 
     pacer_init(LOOP_POLL_RATE);
 
@@ -107,6 +111,7 @@ void racer_io_manage(void)
     btns_update();
     if(is_btn0_pressed()) {
         pio_config_set(LED_STAT0, PIO_OUTPUT_LOW);
+        //servo1_duty_set(20);
         mcu_sleep(&sleep_cfg);
     }
 }
@@ -130,14 +135,14 @@ int main(void)
     uint16_t loop_m_ticks = 0;
     uint16_t loop_u_ticks = 0;
 
-    //int dpacer = 0;
-    //bool ape_mode = 0;
-    //ledbuffer_t *ledsr;
+    int dpacer = 0;
+    bool ape_mode = 0;
+    ledbuffer_t *ledsr;
 
     /* Initilize the car - GPIO, pacer and motors*/
     racer_init();
 
-    //ledsr = ledt_init();
+    ledsr = ledt_init();
 
     struct Command command_tx = create_command(INVALID, 0, 0);
     struct Command command_rx = create_command(INVALID, 0, 0);
@@ -183,10 +188,10 @@ int main(void)
             racer_io_manage();
         }
 
-        //if(dpacer++ == 19) {
-        //    ledt_run(ape_mode, ledsr);
-        //    dpacer = 0;
-        //}
+        if(dpacer++ == 19) {
+            ledt_run(ape_mode, ledsr);
+            dpacer = 0;
+        }
     }
    return 0;
 }

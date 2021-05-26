@@ -3,7 +3,7 @@ DRIVERS = pacer led rf usb_serial ledtape button
 TARGET = racer.bin
 
 SRC = racer.c motors.c servos.c bumper.c power.c buttons.c servos.c ./utils/radio_comm.c ../utils/usb_comm.c ../utils/command.c ../utils/led_tape.c ../utils/ledbuffer.c 
-OPT = -O0
+OPT = -O2
 
 ifneq ($(BOARD), racer)
 $(error BOARD should be set to racer!)
