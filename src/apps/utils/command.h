@@ -6,7 +6,7 @@
 #define LOCK_MOTOR 'L'
 #define BUMPER_STATUS 'B'
 #define SERVO 'S'
-enum{SERVO_NORMAL, SERVO_RAGE}; //servo modes.
+enum{SERVO_NUM1, SERVO_NUM2}; //servo modes.
 
 #define INVALID 'I'
 #define NOTHING 'N'
