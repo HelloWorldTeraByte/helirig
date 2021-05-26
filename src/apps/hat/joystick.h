@@ -6,8 +6,10 @@ struct Command joystick_get_speed_command(void);
 void update_adc(void);
 void update_button(void);
 bool is_debug(void);
+
 bool go_sleep(void);
 bool joystick_button_pushed(void);
+bool button_pushed(void);
 
 
 float read_bat_voltage(void);

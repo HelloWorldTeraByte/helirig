@@ -32,6 +32,7 @@
 
 /* Define LED flash rate in Hz.  */
 enum {LED_FLASH_RATE = 10};
+enum {MOTOR_MSG, SERVO_MSG, LOCK_MOTOR_MSG};
 
 
 #define MOTOR_OFFSET 100
@@ -75,6 +76,8 @@ void hat_init(void)
     joystick_power_sense_init(LOOP_POLL_RATE);
     buzzer_init();
     my_pio_init();   
+
+
     delay_ms(100); 
     if (pio_input_get(RADIO_JUMPER1))
     {
@@ -94,6 +97,9 @@ int main (void)
 {
     hat_init();
     
+    static int msg_select = 0;
+
+
     int led_tape_count = 0;
 
     ledbuffer_t* leds = ledt_init();
@@ -141,8 +147,8 @@ int main (void)
         /*one second task start.*/
             //check bat.
             if (is_low_bat()){
-                pio_output_set(LED_LOW_BAT, 1);
-            }else{
+                pio_output_toggle(LED_LOW_BAT);
+            } else {
                 pio_output_set(LED_LOW_BAT, 0);
             }
 
@@ -188,26 +194,28 @@ int main (void)
        //radio transmit section.
        if (radio_tx_ticks >= LOOP_POLL_RATE / (RADIO_TX_RATE * 2))
         {   
-            static int count = 0;
+            
             //create msg.
-            switch(count){
-                case 0:
+            switch(msg_select){
+                case MOTOR_MSG:
                     if (is_debug()){
                         command_tx = joystick_get_speed_command();          
                     
                     }else{
                         command_tx = imu_get_speed_command();
                     }
-                    count++;
+                    break;
+                case SERVO_MSG:
+                    command_tx = create_servo_command(SERVO_NUM1, true);
+                    msg_select = MOTOR_MSG;
+                    break;
+                case LOCK_MOTOR_MSG:
+                    command_tx = create_lock_motor_command(false);
+                    msg_select = MOTOR_MSG;
                     break;
                 default:
-                    if(joystick_button_pushed()){
-                        command_tx = create_servo_command(SERVO_RAGE, 50);
-                    }else{
-                        command_tx = create_servo_command(SERVO_NORMAL, 50);
-                    }
                     
-                    count = 0;
+                    msg_select = MOTOR_MSG;
                     break;
             }
             
@@ -241,9 +249,13 @@ int main (void)
        
 
        
-        //if (joystick_button_pushed()){
-            //pio_output_toggle(LED_ERROR);
-        //}
+        if (joystick_button_pushed()){
+            msg_select = SERVO_MSG;
+        }
+
+        if(button_pushed()){
+            msg_select = LOCK_MOTOR_MSG;
+        }
 
 
         

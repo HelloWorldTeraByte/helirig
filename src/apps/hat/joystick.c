@@ -122,6 +122,10 @@ bool joystick_button_pushed(void){
     return button_pushed_p (button1);
 }
 
+bool button_pushed(void){
+    return button_pushed_p (button);
+}
+
 bool is_debug(void){
     return !is_power_sense;
 }
