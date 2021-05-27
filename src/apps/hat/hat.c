@@ -74,7 +74,7 @@ void hat_init(void)
     //usb_comm_init();
     imu_init();
     joystick_power_sense_init(LOOP_POLL_RATE);
-    buzzer_init(LOOP_POLL_RATE);
+    buzzer_init(LOOP_POLL_RATE*2);
     my_pio_init();   
 
 
@@ -132,6 +132,9 @@ int main (void)
 
         /* update button */
         update_button();
+
+        /* update buzzer*/
+        buzzer_update();
 
         /* update adc */
         if (adc_tick >= LOOP_POLL_RATE / (ADC_RATE * 2))
@@ -251,10 +254,17 @@ int main (void)
        
         if (joystick_button_pushed()){
             msg_select = SERVO_MSG;
+            buzzer_beep(1000);
+            
         }
 
         if(button_pushed()){
             msg_select = LOCK_MOTOR_MSG;
+            if(buzzer_is_playing()){
+                buzzer_music_pause();
+            }else{
+                buzzer_music_play(MUSIC_CANNON);
+            }
         }
 
 

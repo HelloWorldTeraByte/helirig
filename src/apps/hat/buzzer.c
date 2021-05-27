@@ -4,10 +4,12 @@
 #include "mcu.h"
 #include "pwm.h"
 #include <pio.h>
-#include <stdbool.h>
 #include "buzzer.h"
-#include "music.h"
+#include "delay.h"
+#include <stdlib.h>
+#include <math.h>
 
+#include "music.h"
 
 #define PWM_FREQ_HZ 240
 
@@ -17,7 +19,7 @@ static const pwm_cfg_t pwm_cfg =
     .period = PWM_PERIOD_DIVISOR (PWM_FREQ_HZ),
     .duty = PWM_DUTY_DIVISOR (PWM_FREQ_HZ, 50),
     .align = PWM_ALIGN_LEFT,
-    .polarity = PWM_POLARITY_LOW,
+    .polarity = PWM_POLARITY_HIGH,
     .stop_state = PIO_OUTPUT_LOW
 };
 
@@ -41,7 +43,7 @@ void buzzer_init(int pacer_rate){
 
 
 void buzzer_music_play(int music){
-    pwm_start(pwm);
+    pwm_channels_start (pwm_channel_mask (pwm));
     song_select = music;
     is_playing = true;
 }
@@ -51,30 +53,33 @@ void buzzer_music_pause(void){
     is_playing = false;
 }
 
-void buzzer_music_stop(struct Music *music){
-    pwm_stop(pwm);
-    is_playing = false;
-    music->pointer = 0;
-}
-
-void buzzer_music_reset(struct Music *music){
-    music->pointer = 0;
-}
 
 void buzzer_toggle(void){
-    static is_on = false;
+    static bool is_on = false;
     if (is_on){
-        pwm_start(pwm);
+        pwm_channels_start (pwm_channel_mask (pwm));
     }else{
         pwm_stop(pwm);
     }
     is_on = !is_on;
 }
 
+void buzzer_beep(int ms){
+    //blocking beep.
+    pwm_channels_start (pwm_channel_mask (pwm));
+    delay_ms(ms);
+    pwm_stop(pwm);
+}
 
-void play_tone(struct Music* music){
+
+bool buzzer_is_playing(void){
+    return is_playing;
+}
 
 
+bool play_tone(struct Music* music){
+
+    pwm_stop(pwm);
     // sizeof gives the number of bytes, each int value is composed of two bytes (16 bits)
     // there are two values per note (pitch and duration), so for each note there are four bytes
     int notes = music->notes;
@@ -95,8 +100,11 @@ void play_tone(struct Music* music){
         duration_ms = (wholenote) / abs(divider);
         duration_ms *= 1.5; // increases the duration in half for dotted notes
         }
-
-        pwm_frequency_set(pwm, music->melody[music->pointer]);
+        int freq = music->melody[music->pointer];
+        
+        pwm_frequency_set(pwm, freq);
+        pwm_duty_set (pwm, PWM_DUTY_DIVISOR (freq, 50));
+        pwm_start (pwm);
         // we only play the note for 90% of the duration, leaving 10% as a pause
         //tone(buzzer, melody[music.pointer], noteDuration * 0.9);
 
@@ -106,7 +114,12 @@ void play_tone(struct Music* music){
         // stop the waveform generation before the next note.
         //noTone(buzzer);
         music->pointer = music->pointer + 2;
+        return true;
+    }else{
+        music->pointer = 0;
+        return false;
     }
+    
 
 }
 
