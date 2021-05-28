@@ -100,10 +100,12 @@ bool play_tone(struct Music* music){
         duration_ms = (wholenote) / abs(divider);
         duration_ms *= 1.5; // increases the duration in half for dotted notes
         }
-        int freq = music->melody[music->pointer];
+        int freq = (float) music->melody[music->pointer] * music->tune;
         
         pwm_frequency_set(pwm, freq);
+        pwm_frequency_set(pwm, freq);
         pwm_duty_set (pwm, PWM_DUTY_DIVISOR (freq, 50));
+        //delay_ms(1);
         pwm_start (pwm);
         // we only play the note for 90% of the duration, leaving 10% as a pause
         //tone(buzzer, melody[music.pointer], noteDuration * 0.9);

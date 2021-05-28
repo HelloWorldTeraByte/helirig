@@ -74,7 +74,7 @@ void hat_init(void)
     //usb_comm_init();
     imu_init();
     joystick_power_sense_init(LOOP_POLL_RATE);
-    buzzer_init(LOOP_POLL_RATE*2);
+    buzzer_init(LOOP_POLL_RATE);
     my_pio_init();   
 
 
@@ -176,9 +176,10 @@ int main (void)
 
                     if (command_rx.arg1){
                         //car hit something!! do stuff.
-                        buzzer_beep(1);
+                        buzzer_music_play(MUSIC_NOKIA);
                         //pio_output_set(LED_ERROR);
                     }else{
+                        buzzer_music_play(MUSIC_MARIO);
                         //car is fine, do normal stuff.
                         //pio_output_set(LED_ERROR, 0);
                     }
@@ -254,7 +255,11 @@ int main (void)
        
         if (joystick_button_pushed()){
             msg_select = SERVO_MSG;
-            buzzer_beep(1000);
+            if(buzzer_is_playing()){
+                buzzer_music_pause();
+            }else{
+                buzzer_music_play(MUSIC_NOKIA);
+            }
             
         }
 
@@ -263,16 +268,21 @@ int main (void)
             if(buzzer_is_playing()){
                 buzzer_music_pause();
             }else{
-                buzzer_music_play(MUSIC_CANNON);
+                buzzer_music_play(MUSIC_LION);
             }
         }
 
 
         
        if (go_sleep()){
+           if(buzzer_is_playing()){
+                buzzer_music_pause();
+            }else{
+                buzzer_music_play(MUSIC_MARIO);
+            }
            //pio_output_toggle(LED_ERROR);
-           mcu_sleep_wakeup_set(&sleep_wakeup_cfg);
-           mcu_sleep(&sleep_cfg);
+           //mcu_sleep_wakeup_set(&sleep_wakeup_cfg);
+           //mcu_sleep(&sleep_cfg);
        }
 
 

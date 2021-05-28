@@ -96,6 +96,7 @@ struct Music{
     int* melody;
     int notes;
     int pointer;
+    float tune;
 };
 
 // change this to make the song slower or faster
@@ -148,7 +149,8 @@ static struct Music cannon = {
     .tempo = 100,
     .melody = Cannon_melody,
     .notes = sizeof(Cannon_melody)/ sizeof(Cannon_melody[0]) / 2,
-    .pointer = 0
+    .pointer = 0,
+    .tune = 2
 };
 
 
@@ -173,10 +175,11 @@ static int Nokia_melody[] = {
 
 
 static struct Music nokia = {
-    .tempo = 180,
+    .tempo = 130,
     .melody = Nokia_melody,
     .notes = sizeof(Nokia_melody)/ sizeof(Nokia_melody[0]) / 2,
-    .pointer = 0
+    .pointer = 0,
+    .tune = 1.5
 };
 
 
@@ -274,10 +277,11 @@ static int mario_melody[] = {
 
 
 static struct Music mario = {
-    .tempo = 200,
+    .tempo = 140,
     .melody = mario_melody,
     .notes = sizeof(mario_melody)/ sizeof(mario_melody[0]) / 2,
-    .pointer = 0
+    .pointer = 0,
+    .tune = 1
 };
 
 
@@ -313,7 +317,8 @@ static struct Music star_war = {
     .tempo = 108,
     .melody = star_war_melody,
     .notes = sizeof(star_war_melody)/ sizeof(star_war_melody[0]) / 2,
-    .pointer = 0
+    .pointer = 0,
+    .tune = 1
 };
 
 
@@ -418,5 +423,6 @@ static struct Music lion = {
     .tempo = 122,
     .melody = lion_melody,
     .notes = sizeof(lion_melody)/ sizeof(lion_melody[0]) / 2,
-    .pointer = 0
+    .pointer = 0,
+    .tune = 1
 };
