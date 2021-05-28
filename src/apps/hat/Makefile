@@ -1,4 +1,4 @@
-PERIPHERALS = pit adc
+PERIPHERALS = pit adc pwm
 DRIVERS = usb_serial rf pacer mpu button piezo ledtape
 TARGET = hat.bin
 
