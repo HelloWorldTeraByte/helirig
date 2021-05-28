@@ -25,13 +25,15 @@
 static const mcu_sleep_wakeup_cfg_t sleep_wakeup_cfg = 
 {
     .pio = BUTTON_WAKEUP_PIO,
-    .active_high = false
+    .active_high = true
 };
 
 static const mcu_sleep_cfg_t sleep_cfg = 
 {
     .mode = MCU_SLEEP_MODE_WAIT
 };
+
+static uint8_t temp = 1;
 
 void gpio_init(void)
 {
@@ -46,10 +48,10 @@ void gpio_init(void)
     pio_config_set(RADIO_JUMPER3, PIO_PULLDOWN);
     pio_config_set(RADIO_JUMPER4, PIO_PULLDOWN);
 
-    pio_irq_config_t pio_sleep_cfg = PIO_IRQ_FALLING_EDGE;
+    //pio_irq_config_t pio_sleep_cfg = PIO_IRQ_FALLING_EDGE;
     pio_config_set(BUTTON_WAKEUP_PIO, PIO_PULLUP);
-    pio_irq_config_set(BUTTON_WAKEUP_PIO, pio_sleep_cfg);
-    pio_irq_enable(BUTTON_WAKEUP_PIO);
+    //pio_irq_config_set(BUTTON_WAKEUP_PIO, pio_sleep_cfg);
+    //pio_irq_enable(BUTTON_WAKEUP_PIO);
     mcu_sleep_wakeup_set(&sleep_wakeup_cfg);
 
     pio_init(RADIO_JUMPER1);
@@ -111,8 +113,8 @@ void racer_io_manage(void)
     btns_update();
     if(is_btn0_pressed()) {
         pio_config_set(LED_STAT0, PIO_OUTPUT_LOW);
-        //servo1_duty_set(20);
-        mcu_sleep(&sleep_cfg);
+        servo_drop_bananas();
+        //mcu_sleep(&sleep_cfg);
     }
 }
 
@@ -137,6 +139,7 @@ int main(void)
 
     int dpacer = 0;
     bool ape_mode = 0;
+    bool ape_state = 0;
     ledbuffer_t *ledsr;
 
     /* Initilize the car - GPIO, pacer and motors*/
@@ -180,16 +183,22 @@ int main(void)
                 motor_left_set(command_rx.arg1);
                 motor_right_set(command_rx.arg2);
                 break;
+            case (int)SERVO:
+                servo_drop_bananas();
+                break;
             default:
                 break;
             }
-            racer_bumper_manage();
 
+            racer_bumper_manage();
             racer_io_manage();
+            servo_update();
         }
 
         if(dpacer++ == 19) {
-            ledt_run(ape_mode, ledsr);
+          
+            
+            ledt_run(ledsr);
             dpacer = 0;
         }
     }

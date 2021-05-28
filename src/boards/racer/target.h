@@ -52,10 +52,10 @@ p 1000
 #define LED_LOW_BATT PA2_PIO
 
 /* General  */
-#define SERVO1_PWM_PIO PA25_PIO
+//#define SERVO_PWM_PIO PA25_PIO
 #define LEDTAPE_PIO PA11_PIO 
 //#define APPENDAGE_PIO PA1_PIO
-//#define SERVO_PWM_PIO PA2_PIO
+#define SERVO_PWM_PIO PA17_PIO
 
 /* Button  */
 #define BUTTON_WAKEUP_PIO PA8_PIO
