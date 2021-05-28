@@ -113,6 +113,9 @@ int main (void)
     int one_second_tick = 0;
     int led_tick = 0;
 
+    bool ape_mode;
+    bool ape_state;
+
     struct Command command_tx = create_command(INVALID,0,0);
     struct Command command_rx = create_command(INVALID,0,0);
     while (1)
@@ -239,7 +242,17 @@ int main (void)
 
         if (led_tick >= LOOP_POLL_RATE / (LED_RATE * 2))
         {
-            ledt_run(true, leds);
+            if (ape_mode == 1 && ape_state == 0){
+                leds = ledt_apemode(leds);
+                ape_state = 1;
+            }
+            if (ape_mode == 0 && ape_state == 1)
+            {
+                leds = ledt_junglejam(leds);
+                ape_state = 0;
+            }
+            
+            ledt_run(leds);
             led_tick = 0;
         }
 
