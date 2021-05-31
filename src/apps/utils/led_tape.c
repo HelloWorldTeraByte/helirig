@@ -48,13 +48,21 @@ void ledt_junglejam(void)
 
 void ledt_apemode(void)
 {
-    uint8_t length = 18;
+    const uint8_t length = 18;
     uint8_t i;
     for(i = 0; i < NUM_LED_TAPE; i++) {
         if(i <= length)
-            ledbuffer_set(ledsr, i, 150, i*2, 0);
+            ledbuffer_set(ledsr, i, 200, i, 0);
         else
-            ledbuffer_set(ledsr, i, 150, (NUM_LED_TAPE*2)-(i-length)*2, 0);
+            ledbuffer_set(ledsr, i, 200, (NUM_LED_TAPE)-(i-length), 0);
+    }
+}
+
+void ledt_hit(void)
+{
+    uint8_t i;
+    for(i = 0; i < NUM_LED_TAPE; i++) {
+        ledbuffer_set(ledsr, i, 100, 0, 0);
     }
 }
 
@@ -65,8 +73,10 @@ void ledt_setmode(enum ledt_state st)
     ledbuffer_clear(ledsr);
     if(state_curr == LEDT_NORMAL)
         ledt_junglejam();
-    if(state_curr == LEDT_APE)
+    else if(state_curr == LEDT_APE)
         ledt_apemode();
+    else if(state_curr == LEDT_HIT)
+        ledt_hit();
 }
 void ledt_run(void)
 {

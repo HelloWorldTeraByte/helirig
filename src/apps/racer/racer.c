@@ -7,20 +7,21 @@
 #include "servos.h"
 #include "usb_comm.h"
 #include "power.h"
-#include "ledbuffer.h"
 #include "led_tape.h"
 #include "bumper.h"
 #include "buttons.h"
 #include "delay.h"
 #include "mcu_sleep.h"
+#include "state_manager.h"
 
-#include "stdlib.h"
-#include "string.h"
-
-//TODO:TX and RX radio at different frequncies
-// Sleep
-// Servos
-// Enable the motors with a command
+//TODO:
+//LED change for ape mode
+//Mount everything HAT & CAR
+//Change loop rate
+//Time out for Ape mode
+//Timeout for motors
+//Sleep
+//Caps on motors
 
 static const mcu_sleep_wakeup_cfg_t sleep_wakeup_cfg = 
 {
@@ -33,7 +34,8 @@ static const mcu_sleep_cfg_t sleep_cfg =
     .mode = MCU_SLEEP_MODE_WAIT
 };
 
-static uint8_t temp = 1;
+static struct Command command_tx;
+static struct Command command_rx;
 
 void gpio_init(void)
 {
@@ -64,7 +66,6 @@ void racer_init(void)
 {
     gpio_init();
 
-    /* Initilize the motors*/
     motors_init();
 
     servos_init();
@@ -77,6 +78,10 @@ void racer_init(void)
     bumper_init();
 
     btns_init();
+
+    ledt_init();
+
+    state_manager_init();
 
     pacer_init(LOOP_POLL_RATE);
 
@@ -93,6 +98,9 @@ void racer_init(void)
     }else{
         radio_init(NRF_CHNNEL5);
     }
+
+    command_tx = create_command(INVALID, 0, 0);
+    command_rx = create_command(INVALID, 0, 0);
 }
 
 void racer_power_manage(void)
@@ -113,7 +121,7 @@ void racer_io_manage(void)
     btns_update();
     if(is_btn0_pressed()) {
         pio_config_set(LED_STAT0, PIO_OUTPUT_LOW);
-        servo_drop_bananas();
+        go_ape_mode();
         //mcu_sleep(&sleep_cfg);
     }
 }
@@ -121,7 +129,7 @@ void racer_io_manage(void)
 void racer_bumper_manage(void)
 {
     bumper_update();
-    if(bumper_is_hit()) {
+    if(is_bumper_in_timeout()) {
         motor_lock();
         pio_config_set(LED_STAT0, PIO_OUTPUT_LOW);
     }
@@ -136,29 +144,62 @@ int main(void)
     // TODO: make this smaler unint8?
     uint16_t loop_m_ticks = 0;
     uint16_t loop_u_ticks = 0;
+    uint16_t loop_n_ticks = 0;
 
-    int dpacer = 0;
-    bool ape_mode = 0;
-    bool ape_state = 0;
-    ledbuffer_t *ledsr;
+    uint16_t loop_rf_tx_ticks = 0;
+    uint16_t loop_rf_rx_ticks = 0;
+
 
     /* Initilize the car - GPIO, pacer and motors*/
     racer_init();
-
-    ledsr = ledt_init();
-
-    struct Command command_tx = create_command(INVALID, 0, 0);
-    struct Command command_rx = create_command(INVALID, 0, 0);
 
     while (1) {
         /* Wait until next clock tick.  */
         pacer_wait();
 
+        loop_rf_rx_ticks++;
+        if(loop_rf_rx_ticks >= LOOP_POLL_RATE / (LOOP_RATE_RF_RX * 2))
+        {
+            loop_rf_rx_ticks = 0;
+            command_rx = radio_read_command();
+            switch (command_rx.cmd)
+            {
+            case (int)MOTOR_SPEED:
+                if( (command_rx.arg1 >= -100 && command_rx.arg1 <= 100) && (command_rx.arg2 >= -100 && command_rx.arg2<= 100)) {
+                    motor_left_set(command_rx.arg1);
+                    motor_right_set(command_rx.arg2);
+                }
+                break;
+            case (int)APE_CMD:
+                go_ape_mode();
+               break;
+            default:
+                break;
+            }
+        }
+ 
+        loop_rf_tx_ticks++;
+        if(loop_rf_tx_ticks >= LOOP_POLL_RATE / (LOOP_RATE_RF_TX * 2))
+        {
+            loop_rf_tx_ticks = 0;
+            if(is_bumper_in_timeout()){
+                command_tx = create_bumper_command(true);
+            }else{
+                command_tx = create_bumper_command(false);
+            }
+
+            radio_transmit_command(command_tx);
+        }
+ 
+
         loop_m_ticks++;
         if (loop_m_ticks >= LOOP_POLL_RATE / (LOOP_RATE_M * 2))
         {
             loop_m_ticks = 0;
+
             racer_power_manage();
+            state_manage();
+
             // Heart beat
             pio_output_toggle(LED_STAT1);
         }
@@ -168,39 +209,13 @@ int main(void)
         {
             loop_u_ticks = 0;
 
-            //TODO:Move this the bumper manage
-            if (bumper_is_hit()){
-                command_tx = create_bumper_command(true);
-            }else{
-                command_tx = create_bumper_command(false);
-            }
-
-            command_rx = radio_read_command();
-            radio_transmit_command(command_tx);
-            switch (command_rx.cmd)
-            {
-            case (int)MOTOR_SPEED:
-                motor_left_set(command_rx.arg1);
-                motor_right_set(command_rx.arg2);
-                break;
-            case (int)SERVO:
-                servo_drop_bananas();
-                break;
-            default:
-                break;
-            }
-
             racer_bumper_manage();
             racer_io_manage();
             servo_update();
-        }
 
-        if(dpacer++ == 19) {
-          
-            
-            ledt_run(ledsr);
-            dpacer = 0;
+            ledt_run();
         }
-    }
+   }
+
    return 0;
 }

@@ -38,7 +38,12 @@ void bumper_timeout_update(void)
         bumper_timeout--;
 }
 
-uint8_t bumper_is_hit(void)
+void bumper_set_timeout(uint8_t val)
+{
+    bumper_timeout = val;
+}
+
+uint8_t is_bumper_in_timeout(void)
 {
     if(bumper_timeout > 0)
         return 1;

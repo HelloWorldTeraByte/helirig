@@ -9,6 +9,8 @@ void bumper_init(void);
 void bumper_update(void);
 void bumper_timeout_update(void);
 uint8_t bumper_status_get(void);
-uint8_t bumper_is_hit(void);
+
+uint8_t is_bumper_in_timeout(void);
+void bumper_set_timeout(uint8_t val);
 
 #endif
