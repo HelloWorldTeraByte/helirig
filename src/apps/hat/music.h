@@ -321,19 +321,19 @@ static struct Music star_war = {
     .tune = 1
 };
 
-static int doom_tune[] = {
-  NOTE_DS3,4, NOTE_DS2,6, NOTE_DS2,6, NOTE_DS2,6, NOTE_DS3,4, NOTE_DS2,2, NOTE_D3,2, NOTE_E3,2,
-  NOTE_DS3,4, NOTE_DS2,6, NOTE_DS3,6, NOTE_E2,6, NOTE_E3,6, NOTE_F3,4, 
-  NOTE_DS3,4, NOTE_DS2,6, NOTE_DS2,6, NOTE_DS2,6, NOTE_DS3,4, NOTE_DS2,2, NOTE_D3,2, NOTE_E3,2,
-  NOTE_DS3,4, NOTE_DS2,6 NOTE_DS2,2, NOTE_CS3,2, NOTE_DS3,2, NOTE_D3,2, NOTE_D2,4, NOTE_D2,2, NOTE_D2,2, NOTE_D2,6,
+static int doom_tune_melody[] = {
+  NOTE_DS3,4, NOTE_DS2,4, REST,2, NOTE_DS2,4, REST,2, NOTE_DS2,6, NOTE_DS3,4, NOTE_DS2,2, NOTE_D3,2, NOTE_E3,2,
+  NOTE_DS3,4, NOTE_DS2,6, NOTE_DS3,6, NOTE_E2,6, NOTE_E3,6, NOTE_F2,4, 
+  NOTE_DS3,4, NOTE_DS2,4, REST,2, NOTE_DS2,4, REST,2, NOTE_DS2,6, NOTE_DS3,4, NOTE_DS2,2, NOTE_D3,2, NOTE_E3,2,
+  NOTE_DS3,4, NOTE_DS2,4, REST,2, NOTE_DS2,2, NOTE_CS3,2, NOTE_DS3,2, NOTE_D3,2, NOTE_D2,2, REST,2, NOTE_D2,1, REST,1, NOTE_D2,1, REST,1, NOTE_D2,6,
 };
 
 static struct Music doom = {
     .tempo = 102,
-    .melody = doom_tune,
-    .notes = sizeof(doom_tune)/ sizeof(doom_tune[0]) / 2,
+    .melody = doom_tune_melody,
+    .notes = sizeof(doom_tune_melody)/ sizeof(doom_tune_melody[0]) / 2,
     .pointer = 0,
-    .tune = 1
+    .tune = 2
 };
 
 

@@ -4,14 +4,20 @@
 #include "mpu9250.h"
 #include "command.h"
 #include <math.h>
+#include <stdlib.h>
+
+#define JUMP_THRESH -10000 //190
+#define JUMP_TIMEOUT 100
 
 static twi_t twi_mpu;
 static mpu_t* mpu;
 
-int jump_counter = 0;
-bool mid_air = false;
+
+static int accel_x;
+static int accel_y;
+static int accel_z;
+
 bool jump_flag = false;
-bool rage_flag = false;
 
 enum {POS_SAT, NEG_SAT, UNSAT};
 
@@ -95,22 +101,44 @@ void calc_motor(double *tilt_f, double *tilt_s, double *motor1, double *motor2){
     }
 }
 
-bool jump_detect(int accel_x, int accel_y, int accel_z, bool mid_air){
-    double accel_mag = sqrt((abs(accel_x)^2)+(abs(accel_y)^2)+(abs(accel_z)^2));
-    bool come_down = false;
 
-    //printf("%f, %d\n", accel_mag, mid_air);
+bool jump_detect(void){
+    if (accel_x < JUMP_THRESH){
+        return true;
+    }
+    return false;
+}
 
-    if (mid_air){
-        if (accel_mag > 190){
-            return true;
-        }
-    } else{
-        if (accel_mag < 100){
-            return false;
-        }
+
+
+void update_jump_detection(void){
+    static int count = 0;
+
+    if (jump_detect() && count == 0){
+        jump_flag = true;
+        count ++;
+    }else if(count < JUMP_TIMEOUT){
+        count ++;
+    }else{
+        count = 0;
+    }
+   
+}
+
+
+
+
+bool get_jump_status(void){
+    if (jump_flag){
+        jump_flag = false;
+        return true;
+    }else{
+        return false;
     }
 }
+
+
+
 
 struct Command imu_get_speed_command(void)
 {
@@ -120,28 +148,11 @@ struct Command imu_get_speed_command(void)
     int16_t accel[3];
     mpu9250_read_accel(mpu, accel);
 
-    int accel_x = accel[0];
-    int accel_y = accel[1];
-    int accel_z = accel[2];
+    accel_x = accel[0];
+    accel_y = accel[1];
+    accel_z = accel[2];
 
-    jump_flag = jump_detect(accel_x, accel_y, accel_z, mid_air);
-    if (mid_air){
-        jump_counter++;
-
-        if (jump_flag){
-            rage_flag = true;
-            mid_air = false;
-            jump_counter = 0;
-        } 
-        if (jump_counter >= 10)
-        {
-            jump_counter = 0;
-            mid_air = false;
-            printf("TIMEOUT\n");
-        }
-    } else {
-        rage_flag = false;
-    }
+    update_jump_detection();
 
     double tilt_forward = atan((double) -accel_x/accel_z); 
     double tilt_side = atan((double) -accel_y/accel_z); 

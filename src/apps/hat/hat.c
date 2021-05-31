@@ -12,10 +12,10 @@
 #include "radio_comm.h"
 #include "usb_comm.h"
 #include "power.h"
-#include "ledbuffer.h"
 #include "mcu_sleep.h"
 #include "buzzer.h"
 #include "led_tape.h"
+#include "ledbuffer.h"
 
 /* Define how fast ticks occur.  This must be faster than
    TICK_RATE_MIN.  */
@@ -23,8 +23,8 @@
 
 //config rates
 #define ADC_RATE 10
-#define RADIO_TX_RATE 20
-#define RADIO_RX_RATE 40
+#define RADIO_TX_RATE 25
+#define RADIO_RX_RATE 50
 #define IMU_RATE 10
 #define ONE_SECOND_RATE 1
 #define LED_RATE 3
@@ -98,11 +98,12 @@ int main (void)
     hat_init();
     
     static int msg_select = 0;
+    static int led_mode_select = LEDT_NORMAL;
 
 
     int led_tape_count = 0;
 
-    ledbuffer_t* leds = ledt_init();
+    ledt_init();
 
     uint8_t flash_ticks = 0;
 
@@ -113,8 +114,7 @@ int main (void)
     int one_second_tick = 0;
     int led_tick = 0;
 
-    bool ape_mode;
-    bool ape_state;
+
 
     struct Command command_tx = create_command(INVALID,0,0);
     struct Command command_rx = create_command(INVALID,0,0);
@@ -159,10 +159,12 @@ int main (void)
             }
 
             if(is_debug()){
+                pio_output_set(LED_DEBUG, 1);
+            }else{
                 pio_output_toggle(LED_DEBUG);
             }
-            //do something.
-        /*one second task ends.*/
+            //do somethin  g.
+            /*one second task ends.*/
             one_second_tick = 0;
         }
 
@@ -179,9 +181,23 @@ int main (void)
 
                     if (command_rx.arg1){
                         //car hit something!! do stuff.
+                        led_mode_select = LEDT_HIT;
                         buzzer_music_play(MUSIC_NOKIA);
                         //pio_output_set(LED_ERROR);
                     }else{
+                        buzzer_music_play(MUSIC_MARIO);
+                        //car is fine, do normal stuff.
+                        //pio_output_set(LED_ERROR, 0);
+                    }
+                    break;
+                case (int) RACER_STATE:
+                    if (command_rx.arg1){
+                        led_mode_select = LEDT_APE;
+                        //car hit something!! do stuff.
+                        buzzer_music_play(MUSIC_STARWAR);
+                        //pio_output_set(LED_ERROR);
+                    }else{
+                        led_mode_select = LEDT_NORMAL;
                         buzzer_music_play(MUSIC_MARIO);
                         //car is fine, do normal stuff.
                         //pio_output_set(LED_ERROR, 0);
@@ -213,7 +229,7 @@ int main (void)
                     }
                     break;
                 case SERVO_MSG:
-                    command_tx = create_servo_command(SERVO_NUM1, true);
+                    command_tx = create_ape_mode_command(true);
                     msg_select = MOTOR_MSG;
                     break;
                 case LOCK_MOTOR_MSG:
@@ -221,7 +237,6 @@ int main (void)
                     msg_select = MOTOR_MSG;
                     break;
                 default:
-                    
                     msg_select = MOTOR_MSG;
                     break;
             }
@@ -246,17 +261,8 @@ int main (void)
 
         if (led_tick >= LOOP_POLL_RATE / (LED_RATE * 2))
         {
-            if (ape_mode == 1 && ape_state == 0){
-                leds = ledt_apemode(leds);
-                ape_state = 1;
-            }
-            if (ape_mode == 0 && ape_state == 1)
-            {
-                leds = ledt_junglejam(leds);
-                ape_state = 0;
-            }
-            
-            ledt_run(leds);
+            ledt_setmode(led_mode_select);
+            ledt_run();
             led_tick = 0;
         }
 
@@ -270,12 +276,17 @@ int main (void)
             msg_select = SERVO_MSG;
         }
 
+        if(get_jump_status()){
+            msg_select = SERVO_MSG;
+            pio_output_toggle(LED_ERROR);
+        }
+
         if(button_pushed()){
             msg_select = LOCK_MOTOR_MSG;
             if(buzzer_is_playing()){
                 buzzer_music_pause();
             }else{
-                buzzer_music_play(MUSIC_CANNON);
+                buzzer_music_play(MUSIC_DOOM);
             }
         }
 
@@ -285,7 +296,7 @@ int main (void)
            if(buzzer_is_playing()){
                 buzzer_music_pause();
             }else{
-                buzzer_music_play(MUSIC_MARIO);
+                buzzer_music_play(MUSIC_STARWAR);
             }
            //pio_output_toggle(LED_ERROR);
            //mcu_sleep_wakeup_set(&sleep_wakeup_cfg);
