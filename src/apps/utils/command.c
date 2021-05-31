@@ -30,11 +30,6 @@ struct Command str2cmd(char* buffer)
     return create_command(val[0], val[1], val[2]);
 }
 
-
-struct Command create_bumper_command(bool activated){
-    return create_command(BUMPER_STATUS, activated, 0);
-}
-
 struct Command create_motor_command(int left_speed, int right_speed){
     return create_command(MOTOR_SPEED, left_speed, right_speed);
 }
