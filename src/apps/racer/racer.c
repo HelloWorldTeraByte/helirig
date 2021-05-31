@@ -17,9 +17,10 @@
 //TODO:
 //Timeout for motors
 //Mount everything HAT & CAR
+//Caps on motors
+
 //Change loop rate
 //Sleep
-//Caps on motors
 
 static const mcu_sleep_wakeup_cfg_t sleep_wakeup_cfg = 
 {
@@ -68,7 +69,6 @@ void racer_init(void)
 
     servos_init();
 
-    /* Initilize the USB communication interface*/
     //usb_comm_init();
 
     power_sense_init();
@@ -144,12 +144,11 @@ int main(void)
     // TODO: make this smaler unint8?
     uint16_t loop_m_ticks = 0;
     uint16_t loop_u_ticks = 0;
-    uint16_t loop_n_ticks = 0;
 
     uint16_t loop_rf_tx_ticks = 0;
     uint16_t loop_rf_rx_ticks = 0;
 
-    uint8_t rf_cmd_num = 0;
+    uint16_t speed_last_rx_tick = 0;
 
     /* Initilize the car - GPIO, pacer and motors*/
     racer_init();
@@ -162,11 +161,14 @@ int main(void)
         if(loop_rf_rx_ticks >= LOOP_POLL_RATE / (LOOP_RATE_RF_RX * 2))
         {
             loop_rf_rx_ticks = 0;
+            speed_last_rx_tick++;
+
             command_rx = radio_read_command();
             switch (command_rx.cmd)
             {
             case (int)MOTOR_SPEED:
                 if( (command_rx.arg1 >= -100 && command_rx.arg1 <= 100) && (command_rx.arg2 >= -100 && command_rx.arg2<= 100)) {
+                    speed_last_rx_tick = 0;
                     motor_left_set(command_rx.arg1);
                     motor_right_set(command_rx.arg2);
                 }
@@ -177,6 +179,12 @@ int main(void)
                break;
             default:
                 break;
+            }
+
+            if(speed_last_rx_tick > SPEED_RX_TIMEOUT) {
+                speed_last_rx_tick = 0;
+                motor_left_set(0);
+                motor_right_set(0);
             }
         }
  
