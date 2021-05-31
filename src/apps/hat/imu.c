@@ -99,7 +99,7 @@ bool jump_detect(int accel_x, int accel_y, int accel_z, bool mid_air){
     double accel_mag = sqrt((abs(accel_x)^2)+(abs(accel_y)^2)+(abs(accel_z)^2));
     bool come_down = false;
 
-    printf("%f, %d\n", accel_mag, mid_air);
+    //printf("%f, %d\n", accel_mag, mid_air);
 
     if (mid_air){
         if (accel_mag > 190){
