@@ -39,10 +39,9 @@ struct Command create_motor_command(int left_speed, int right_speed){
     return create_command(MOTOR_SPEED, left_speed, right_speed);
 }
 
-struct Command create_servo_command(int servo_num, bool activate) {
-    return create_command(SERVO, servo_num, activate);
+struct Command create_ape_mode_command(int b_ape_mode) {
+    return create_command(APE_CMD, b_ape_mode, 0);
 }
-
 
 struct Command create_lock_motor_command(bool locked) {
     return create_command(LOCK_MOTOR, locked, 0);
@@ -50,9 +49,9 @@ struct Command create_lock_motor_command(bool locked) {
 
 struct Command create_battary_voltage_command(double voltage){
     int voltage_int = voltage * 100;
-    return create_command(BATTARY_VALTAGE, voltage_int, 0);
+    return create_command(BATTARY_VOLTAGE, voltage_int, 0);
 }
 
-struct Command create_racer_led_mode_command(int mode){
-    return create_command(RACER_LED_MODE, mode, 0);
+struct Command create_racer_state_command(int state){
+    return create_command(RACER_STATE, state, 0);
 }
