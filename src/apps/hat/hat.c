@@ -255,12 +255,6 @@ int main (void)
        
         if (joystick_button_pushed()){
             msg_select = SERVO_MSG;
-            if(buzzer_is_playing()){
-                buzzer_music_pause();
-            }else{
-                buzzer_music_play(MUSIC_NOKIA);
-            }
-            
         }
 
         if(button_pushed()){
@@ -268,7 +262,7 @@ int main (void)
             if(buzzer_is_playing()){
                 buzzer_music_pause();
             }else{
-                buzzer_music_play(MUSIC_LION);
+                buzzer_music_play(MUSIC_CANNON);
             }
         }
 
