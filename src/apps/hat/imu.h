@@ -5,6 +5,8 @@
 struct Command imu_get_speed_command(void);
 void imu_init(void);
 bool get_jump_status(void);
+void update_imu(void);
+bool is_cool_down(void);
 
 
 

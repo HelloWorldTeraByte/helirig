@@ -6,8 +6,8 @@
 #include <math.h>
 #include <stdlib.h>
 
-#define JUMP_THRESH -10000 //190
-#define JUMP_TIMEOUT 100
+#define JUMP_THRESH -9000 //190
+#define JUMP_TIMEOUT 1000
 
 static twi_t twi_mpu;
 static mpu_t* mpu;
@@ -18,7 +18,8 @@ static int accel_y;
 static int accel_z;
 
 bool jump_flag = false;
-
+bool cool_down = false;
+static int count = 0;
 enum {POS_SAT, NEG_SAT, UNSAT};
 
 static twi_cfg_t mpu_twi_cfg =
@@ -112,14 +113,16 @@ bool jump_detect(void){
 
 
 void update_jump_detection(void){
-    static int count = 0;
+    
 
     if (jump_detect() && count == 0){
         jump_flag = true;
+        cool_down = true;
         count ++;
-    }else if(count < JUMP_TIMEOUT){
+    }else if(cool_down && count < JUMP_TIMEOUT){
         count ++;
     }else{
+        cool_down = false;
         count = 0;
     }
    
@@ -145,14 +148,9 @@ struct Command imu_get_speed_command(void)
     int motor_input_1_out;
     int motor_input_2_out;
 
-    int16_t accel[3];
-    mpu9250_read_accel(mpu, accel);
+    
 
-    accel_x = accel[0];
-    accel_y = accel[1];
-    accel_z = accel[2];
-
-    update_jump_detection();
+    
 
     double tilt_forward = atan((double) -accel_x/accel_z); 
     double tilt_side = atan((double) -accel_y/accel_z); 
@@ -171,4 +169,20 @@ struct Command imu_get_speed_command(void)
     motor_input_2_out = (int) (motor_input_2 * 100);
                     
     return create_command(MOTOR_SPEED, motor_input_1_out, motor_input_2_out);
+}
+
+bool is_cool_down(void){
+    if (count == 0){
+        return false;
+    }
+    return true;
+}
+
+void update_imu(void){
+    int16_t accel[3];
+    mpu9250_read_accel(mpu, accel);
+    accel_x = accel[0];
+    accel_y = accel[1];
+    accel_z = accel[2];
+    update_jump_detection();
 }
