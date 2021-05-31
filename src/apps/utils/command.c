@@ -54,5 +54,5 @@ struct Command create_battary_voltage_command(double voltage){
 }
 
 struct Command create_racer_led_mode_command(int mode){
-    return create_command(RACER_MODE, mode, 0);
+    return create_command(RACER_LED_MODE, mode, 0);
 }

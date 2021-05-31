@@ -6,7 +6,7 @@
 #define LOCK_MOTOR 'L'
 #define BUMPER_STATUS 'B'
 #define BATTARY_VALTAGE 'V'
-#define RACER_MODE 'R'
+#define RACER_LED_MODE 'R'
 
 #define SERVO 'S'
 enum{SERVO_NUM1, SERVO_NUM2}; //servo number.
