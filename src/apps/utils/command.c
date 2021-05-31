@@ -52,3 +52,7 @@ struct Command create_battary_voltage_command(double voltage){
     int voltage_int = voltage * 100;
     return create_command(BATTARY_VALTAGE, voltage_int, 0);
 }
+
+struct Command create_racer_mode_command(int mode){
+    return create_command(RACER_MODE, mode, 0);
+}
