@@ -1,14 +1,21 @@
-#include <pio.h>
+#include "pio.h"
 #include "target.h"
-#include "pacer.h"
 #include "ledbuffer.h"
+#include "led_tape.h"
 
-#define NUM_LEDS 28
+static ledbuffer_t* ledsr;
+static uint16_t count = 0;
 
-ledbuffer_t* ledt_init(void)
+static enum ledt_state state_curr = LEDT_NORMAL;
+
+void ledt_init(void)
 {
-    ledbuffer_t* ledsr = ledbuffer_init(LEDTAPE_PIO, NUM_LEDS);
-    ledbuffer_clear(ledsr);
+    ledsr = ledbuffer_init(LEDTAPE_PIO, NUM_LED_TAPE);
+    ledt_setmode(LEDT_NORMAL);
+}
+
+void ledt_junglejam(void)
+{
     ledbuffer_set(ledsr, 0, 0, 100, 0);
     ledbuffer_set(ledsr, 1, 14, 94, 0);
     ledbuffer_set(ledsr, 2, 29, 87, 0);
@@ -37,14 +44,32 @@ ledbuffer_t* ledt_init(void)
     ledbuffer_set(ledsr, 25, 43, 80, 0);
     ledbuffer_set(ledsr, 26, 29, 87, 0);
     ledbuffer_set(ledsr, 27, 14, 94, 0);
-    return(ledsr);
-    
 }
 
-
-
-void ledt_run(ledbuffer_t* ledsr)
+void ledt_apemode(void)
 {
-    ledbuffer_advance(ledsr, 1);
+    uint8_t length = 18;
+    uint8_t i;
+    for(i = 0; i < NUM_LED_TAPE; i++) {
+        if(i <= length)
+            ledbuffer_set(ledsr, i, 150, i*2, 0);
+        else
+            ledbuffer_set(ledsr, i, 150, (NUM_LED_TAPE*2)-(i-length)*2, 0);
+    }
+}
+
+void ledt_setmode(enum ledt_state st)
+{
+    state_curr = st;
+
+    ledbuffer_clear(ledsr);
+    if(state_curr == LEDT_NORMAL)
+        ledt_junglejam();
+    if(state_curr == LEDT_APE)
+        ledt_apemode();
+}
+void ledt_run(void)
+{
     ledbuffer_write(ledsr);
+    ledbuffer_advance(ledsr, 1);
 }

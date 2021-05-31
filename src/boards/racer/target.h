@@ -29,14 +29,11 @@
 #define MOTOR_UPDATE_RATE 10
 #define RADIO_POLL_RATE 1
 
-/*
-m 1
-u 10
-n 100
-p 1000
-*/
 #define LOOP_RATE_M 1
 #define LOOP_RATE_U 10
+
+#define LOOP_RATE_RF_RX 50
+#define LOOP_RATE_RF_TX 25
 
 /* TWI  */
 #define TWI_TIMEOUT_US_DEFAULT 10000
@@ -52,6 +49,8 @@ p 1000
 #define LED_LOW_BATT PA2_PIO
 
 /* General  */
+#define NUM_LED_TAPE 28
+
 //#define SERVO_PWM_PIO PA25_PIO
 #define LEDTAPE_PIO PA11_PIO 
 //#define APPENDAGE_PIO PA1_PIO

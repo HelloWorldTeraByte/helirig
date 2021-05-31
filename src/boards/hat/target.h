@@ -51,6 +51,8 @@
 
 
 /* General  */
+#define NUM_LED_TAPE 29
+
 #define APPENDAGE_PIO PA1_PIO
 #define SERVO_PWM_PIO PA2_PIO
 
