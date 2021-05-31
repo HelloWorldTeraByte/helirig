@@ -15,11 +15,9 @@
 #include "state_manager.h"
 
 //TODO:
-//LED change for ape mode
+//Timeout for motors
 //Mount everything HAT & CAR
 //Change loop rate
-//Time out for Ape mode
-//Timeout for motors
 //Sleep
 //Caps on motors
 
@@ -129,13 +127,15 @@ void racer_io_manage(void)
 void racer_bumper_manage(void)
 {
     bumper_update();
-    if(is_bumper_in_timeout()) {
+    if(b_go_hit_mode()) {
+        go_hit_mode();
         motor_lock();
-        pio_config_set(LED_STAT0, PIO_OUTPUT_LOW);
+        pio_output_toggle(LED_STAT0);
     }
-    else {
+    if(b_exit_hit_mode()) {
+        go_normal_mode();
         motor_unlock();
-        pio_config_set(LED_STAT0, PIO_OUTPUT_HIGH);
+        pio_output_toggle(LED_STAT0);
     }
 }
 
@@ -149,6 +149,7 @@ int main(void)
     uint16_t loop_rf_tx_ticks = 0;
     uint16_t loop_rf_rx_ticks = 0;
 
+    uint8_t rf_cmd_num = 0;
 
     /* Initilize the car - GPIO, pacer and motors*/
     racer_init();
@@ -171,7 +172,8 @@ int main(void)
                 }
                 break;
             case (int)APE_CMD:
-                go_ape_mode();
+                if(command_rx.arg1 == 1)
+                    go_ape_mode();
                break;
             default:
                 break;
@@ -182,14 +184,10 @@ int main(void)
         if(loop_rf_tx_ticks >= LOOP_POLL_RATE / (LOOP_RATE_RF_TX * 2))
         {
             loop_rf_tx_ticks = 0;
-            if(is_bumper_in_timeout()){
-                command_tx = create_bumper_command(true);
-            }else{
-                command_tx = create_bumper_command(false);
-            }
 
+            command_tx = create_racer_state_command((int)get_current_state());
             radio_transmit_command(command_tx);
-        }
+       }
  
 
         loop_m_ticks++;

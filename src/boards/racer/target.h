@@ -33,8 +33,8 @@
 #define LOOP_RATE_U 10
 #define LOOP_RATE_N 100
 
-#define LOOP_RATE_RF_RX 50
-#define LOOP_RATE_RF_TX 25
+#define LOOP_RATE_RF_RX 20
+#define LOOP_RATE_RF_TX 10
 
 /* TWI  */
 #define TWI_TIMEOUT_US_DEFAULT 10000

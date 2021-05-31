@@ -13,4 +13,7 @@ uint8_t bumper_status_get(void);
 uint8_t is_bumper_in_timeout(void);
 void bumper_set_timeout(uint8_t val);
 
+uint8_t b_go_hit_mode(void);
+uint8_t b_exit_hit_mode(void);
+
 #endif
