@@ -23,9 +23,9 @@
 
 //config rates
 #define ADC_RATE 10
-#define RADIO_TX_RATE 25
-#define RADIO_RX_RATE 50
-#define IMU_RATE 10
+#define RADIO_TX_RATE 10
+#define RADIO_RX_RATE 20
+#define IMU_RATE 35
 #define ONE_SECOND_RATE 1
 #define LED_RATE 3
 
@@ -115,6 +115,9 @@ int main (void)
     int led_tick = 0;
 
 
+    bool bumper_flag = false;
+
+
 
     struct Command command_tx = create_command(INVALID,0,0);
     struct Command command_rx = create_command(INVALID,0,0);
@@ -177,30 +180,20 @@ int main (void)
              //execute intake commands.
             switch(command_rx.cmd){
 
-                case (int) BUMPER_STATUS:
-
-                    if (command_rx.arg1){
-                        //car hit something!! do stuff.
-                        led_mode_select = LEDT_HIT;
-                        buzzer_music_play(MUSIC_NOKIA);
-                        //pio_output_set(LED_ERROR);
-                    }else{
-                        buzzer_music_play(MUSIC_MARIO);
-                        //car is fine, do normal stuff.
-                        //pio_output_set(LED_ERROR, 0);
-                    }
-                    break;
                 case (int) RACER_STATE:
-                    if (command_rx.arg1){
+                    if (command_rx.arg1 == 1){
                         led_mode_select = LEDT_APE;
                         //car hit something!! do stuff.
                         buzzer_music_play(MUSIC_STARWAR);
                         //pio_output_set(LED_ERROR);
+                    }else if(command_rx.arg1 == 2){
+                        led_mode_select = LEDT_HIT;
+                        buzzer_music_play(MUSIC_NOKIA);
                     }else{
                         led_mode_select = LEDT_NORMAL;
-                        buzzer_music_play(MUSIC_MARIO);
                         //car is fine, do normal stuff.
                         //pio_output_set(LED_ERROR, 0);
+                        buzzer_music_play(MUSIC_MARIO);
                     }
                     break;
 
@@ -230,14 +223,11 @@ int main (void)
                     break;
                 case SERVO_MSG:
                     command_tx = create_ape_mode_command(true);
-                    msg_select = MOTOR_MSG;
                     break;
                 case LOCK_MOTOR_MSG:
                     command_tx = create_lock_motor_command(false);
-                    msg_select = MOTOR_MSG;
                     break;
                 default:
-                    msg_select = MOTOR_MSG;
                     break;
             }
             
@@ -247,6 +237,7 @@ int main (void)
 
             //transmit.
             if (radio_transmit_command(command_tx)){
+                msg_select = MOTOR_MSG;
                 pio_output_set(LED_STATUS, 1);
             }else{
                 pio_output_set(LED_STATUS, 0);
@@ -267,8 +258,18 @@ int main (void)
         }
 
 
+        if (imu_ticks >= LOOP_POLL_RATE / (IMU_RATE * 2))
+        {
+            update_imu();
+        }
 
 
+
+        if(is_cool_down()){
+            pio_output_set(LED_ERROR, 1);
+        }else{
+            pio_output_set(LED_ERROR, 0);
+        }
        
 
        
@@ -278,7 +279,7 @@ int main (void)
 
         if(get_jump_status()){
             msg_select = SERVO_MSG;
-            pio_output_toggle(LED_ERROR);
+            
         }
 
         if(button_pushed()){
