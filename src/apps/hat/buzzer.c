@@ -145,6 +145,9 @@ void buzzer_update(void){
                 case MUSIC_STARWAR:
                     play_tone(&star_war);
                     break;
+                case MUSIC_DOOM:
+                    play_tone(&doom);
+                    break;
                 default:
                     break;
             }

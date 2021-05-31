@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-enum{MUSIC_CANNON, MUSIC_NOKIA, MUSIC_MARIO, MUSIC_STARWAR, MUSIC_LION, MUSIC_NUM_MAX};
+enum{MUSIC_CANNON, MUSIC_NOKIA, MUSIC_MARIO, MUSIC_STARWAR, MUSIC_LION,MUSIC_DOOM, MUSIC_NUM_MAX};
 
 void buzzer_init(int pacer_rate);
 void buzzer_update(void);
