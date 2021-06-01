@@ -6,9 +6,14 @@
 #include <math.h>
 #include <stdlib.h>
 
-#define JUMP_THRESH -9000 //190
-#define JUMP_TIMEOUT 1000
+#define JUMP_THRESH -14000 //190
+#define JUMP_TIMEOUT 5000
 
+#define IMU_MAX 16000
+#define DEAD_ZONE 1000
+#define SPIN_ZONE 2000
+#define SPIN_MAX_SPEED 50
+#define SENSITIVITY 0.3
 static twi_t twi_mpu;
 static mpu_t* mpu;
 
@@ -36,73 +41,6 @@ void imu_init(void){
     mpu = mpu9250_create (twi_mpu, MPU_ADDRESS);
 }
 
-bool is_in_dead_zone(double tilt){
-    if (tilt > -0.2 && tilt < 0.2){
-        return true;
-    } else{
-        return false;
-    }
-}
-
-int is_in_sat_zone(double tilt){
-    if (tilt > 1){
-        return POS_SAT;
-    } else if (tilt < -1){
-        return NEG_SAT;
-    } else {
-        return UNSAT;
-    }
-    
-}
-
-void tilt_filter(double *tilt_f, double *tilt_s){
-    //active zone 0.2 rad < tilt < 1 rad
-    int saturation_f = is_in_sat_zone(*tilt_f);
-    int saturation_s = is_in_sat_zone(*tilt_s);
-
-    if (saturation_f == POS_SAT){
-        *tilt_f = 1; 
-    } else if (saturation_f == NEG_SAT){
-        *tilt_f = -1;
-    }
-    if (saturation_s == NEG_SAT){
-        *tilt_s = -1;
-    } else if (saturation_s == POS_SAT){
-        *tilt_s = 1;
-    }
-
-    if (is_in_dead_zone(*tilt_f)){
-        *tilt_f = 0;
-    }
-    if  (is_in_dead_zone(*tilt_s)){
-        *tilt_s = 0;
-    }
-}
-
-void calc_motor(double *tilt_f, double *tilt_s, double *motor1, double *motor2){
-    if (*tilt_s > 0 && *tilt_f == 0){
-        *motor1 = 0;
-        *motor2 = (1+*tilt_s)/2;
-    } else if ( *tilt_s < 0 && *tilt_f == 0){
-        *motor1 = (1-*tilt_s)/2;
-        *motor2 = 0;
-    } else {
-        *motor1 = *tilt_f * (1-*tilt_s);
-        *motor2 = *tilt_f * (1+*tilt_s);
-    }
-    if (*motor1 > 1){
-        *motor1 = 1;
-    } else if (*motor1 < -1){
-        *motor1 = -1;
-    }
-    if (*motor2 > 1){
-        *motor2 = 1;
-    } else if (*motor2 < -1){
-        *motor2 = -1;
-    }
-}
-
-
 bool jump_detect(void){
     if (accel_x < JUMP_THRESH){
         return true;
@@ -128,9 +66,6 @@ void update_jump_detection(void){
    
 }
 
-
-
-
 bool get_jump_status(void){
     if (jump_flag){
         jump_flag = false;
@@ -141,34 +76,60 @@ bool get_jump_status(void){
 }
 
 
+bool IMU_is_in_deadzone(int val){
+    if (abs(val) < DEAD_ZONE){
+        return true;
+    }
+    return false;
+}
 
+bool IMU_is_in_spinzone(void){
+    if (IMU_is_in_deadzone(accel_y)){
+        return false;
+    }else if(abs(accel_x) < SPIN_ZONE + DEAD_ZONE){
+        return true;
+    }
+    return false;
+}
+
+int my_map(int x, int x_min, int x_max, int y_min, int y_max){
+    int A = ((double)x-(double)x_min)/((double)x_max-(double)x);
+    int y = ((double)y_min+(double)y_max)/(1.0+(double)A);
+    return y;
+}
 
 struct Command imu_get_speed_command(void)
 {
-    int motor_input_1_out;
-    int motor_input_2_out;
+    volatile int speed_buffer[2];
+    if (IMU_is_in_spinzone()){
+        speed_buffer[0] = (double) -accel_y/((double) IMU_MAX) * SPIN_MAX_SPEED;
+        speed_buffer[1] = (double) accel_y/((double) IMU_MAX) * SPIN_MAX_SPEED;
+    }else if(!IMU_is_in_deadzone(accel_x)){
+        double scale = my_map(accel_x, DEAD_ZONE, IMU_MAX, 1, 10)*2.0/10.0;
+        speed_buffer[0] = ((double) accel_x-((double) accel_y*SENSITIVITY/scale))/((double)IMU_MAX) * 100;
+        speed_buffer[1] = ((double) accel_x+((double) accel_y*SENSITIVITY)/scale)/((double) IMU_MAX) * 100;
+    }else{
+        speed_buffer[0] = 0;
+        speed_buffer[1] = 0;
+    }
 
+    if (speed_buffer[0] > 100){
+        speed_buffer[0] = 100;
+    }
+
+    if (speed_buffer[1] > 100){
+        speed_buffer[1] = 100;
+    }
+
+    if (speed_buffer[0] < -100){
+        speed_buffer[0] = -100;
+    }
+
+    if (speed_buffer[1] < -100){
+        speed_buffer[1] = -100;
+    }
     
-
-    
-
-    double tilt_forward = atan((double) -accel_x/accel_z); 
-    double tilt_side = atan((double) -accel_y/accel_z); 
-    //double tilt_mag;
-    //calculate the magnitude of tilt to control speed? v2 idea
-                    
-    double motor_input_1;
-    double motor_input_2;
-                    // the motors are organised in the following configuration:
-                    // front
-                    // 1   2
-    tilt_filter(&tilt_forward, &tilt_side);
-    calc_motor(&tilt_forward, &tilt_side, &motor_input_1, &motor_input_2);
-                    
-    motor_input_1_out = (int) (motor_input_1 * 100);
-    motor_input_2_out = (int) (motor_input_2 * 100);
-                    
-    return create_command(MOTOR_SPEED, motor_input_1_out, motor_input_2_out);
+    return create_command(MOTOR_SPEED, speed_buffer[0], speed_buffer[1]);
 }
 
 bool is_cool_down(void){
