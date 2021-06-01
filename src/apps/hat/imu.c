@@ -22,6 +22,9 @@ static int accel_x;
 static int accel_y;
 static int accel_z;
 
+static int accel_x_offset = 0;
+static int accel_y_offset = 0;
+
 bool jump_flag = false;
 bool cool_down = false;
 static int count = 0;
@@ -142,8 +145,15 @@ bool is_cool_down(void){
 void update_imu(void){
     int16_t accel[3];
     mpu9250_read_accel(mpu, accel);
-    accel_x = accel[0];
-    accel_y = accel[1];
+    accel_x = accel[0]-accel_x_offset;
+    accel_y = accel[1]-accel_y_offset;
     accel_z = accel[2];
     update_jump_detection();
+}
+
+void set_offset(void){
+    int16_t accel[3];
+    mpu9250_read_accel(mpu, accel);
+    accel_x_offset = accel[0];
+    accel_y_offset = accel[1];
 }

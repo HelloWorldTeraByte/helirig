@@ -283,12 +283,7 @@ int main (void)
         }
 
         if(button_pushed()){
-            msg_select = LOCK_MOTOR_MSG;
-            if(buzzer_is_playing()){
-                buzzer_music_pause();
-            }else{
-                buzzer_music_play(MUSIC_DOOM);
-            }
+            set_offset();
         }
 
 

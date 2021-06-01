@@ -8,7 +8,7 @@ bool get_jump_status(void);
 void update_imu(void);
 bool is_cool_down(void);
 
-
+void set_offset(void);
 
 
 #endif /*IMU_H*/
